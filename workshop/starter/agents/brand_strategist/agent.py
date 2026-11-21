@@ -34,6 +34,8 @@ Today's date is {today}. The current year is {year}.
 ## How to research
 - Before writing anything, call google_search at least once for EACH of the three
   research areas below (audience, competitors, trends). Do not answer from memory.
+- Keep searching focused: 2-3 searches per research area, at most 9 in total.
+  Combine related questions into one query instead of searching for each detail.
 - ALWAYS include the current year ({year}) in every search query,
   e.g. "Gen Z sustainable products trends {year}".
 - Never cite a source, report, statistic, or brand fact that you did not get from
@@ -92,14 +94,37 @@ UNGROUNDED_WARNING = (
 )
 
 
+FAILED_RESEARCH_MESSAGE = (
+    "⚠ Research failed ({reason}). No results were produced; "
+    "ask again with a narrower brief."
+)
+
+
 def flag_missing_grounding(
     callback_context: CallbackContext, llm_response: LlmResponse
 ) -> Optional[LlmResponse]:
-    """Appends a visible warning when a final answer has no search grounding.
+    """Makes failed or ungrounded answers visible instead of silent.
 
+    - Error with no text (e.g. TOO_MANY_TOOL_CALLS): replace the empty answer
+      with a short failure message. error_code is kept for logs and callers.
+    - Final text with no grounding metadata: append a warning.
     Only flags; it does not retry or change the research itself.
     """
-    if llm_response.partial or not llm_response.content or not llm_response.content.parts:
+    if llm_response.partial:
+        return None
+    has_text = bool(
+        llm_response.content
+        and llm_response.content.parts
+        and any(part.text and not part.thought for part in llm_response.content.parts)
+    )
+    if llm_response.error_code and not has_text:
+        logger.warning("Brand Strategist model call failed: %s", llm_response.error_code)
+        llm_response.content = types.Content(
+            role="model",
+            parts=[types.Part(text=FAILED_RESEARCH_MESSAGE.format(reason=llm_response.error_code))],
+        )
+        return llm_response
+    if not llm_response.content or not llm_response.content.parts:
         return None
     if not any(part.text and not part.thought for part in llm_response.content.parts):
         return None
