@@ -314,21 +314,26 @@ async def main() -> int:
             print(f"[stop] budget of {args.budget} paid runs reached; not running {case}")
             break
 
-        if case.startswith("strategist"):
-            prompt = {"strategist_a": BRIEF_A, "strategist_b": BRIEF_B,
-                      "strategist_caption": CAPTION_REQUEST}[case]
-            print(f"[run ] {case} ...", flush=True)
-            result = await run_agent(strategist_agent, prompt)
-            model = strategist_agent.model
-        else:
-            research = load_case(out_dir, "strategist_a") if case == "sequence" else None
-            print(f"[run ] {case} ...", flush=True)
-            result = await run_agent(copywriter_agent, COPY_REQUEST,
-                                     history_text=research["final_text"] if research else None)
-            model = copywriter_agent.model
-
+        # Log before calling so a failed attempt still counts against the budget.
         log.append({"case": case, "at": datetime.datetime.now().isoformat(timespec="seconds")})
         log_path.write_text(json.dumps(log, indent=2))
+        print(f"[run ] {case} ...", flush=True)
+        try:
+            if case.startswith("strategist"):
+                prompt = {"strategist_a": BRIEF_A, "strategist_b": BRIEF_B,
+                          "strategist_caption": CAPTION_REQUEST}[case]
+                result = await run_agent(strategist_agent, prompt)
+                model = strategist_agent.model
+            else:
+                research = load_case(out_dir, "strategist_a") if case == "sequence" else None
+                result = await run_agent(copywriter_agent, COPY_REQUEST,
+                                         history_text=research["final_text"] if research else None)
+                model = copywriter_agent.model
+        except Exception as exc:  # record the failure, then stop: later cases may depend on this one
+            log[-1]["error"] = redact(f"{type(exc).__name__}: {exc}")[:300]
+            log_path.write_text(json.dumps(log, indent=2))
+            print(f"[fail] {case}: {log[-1]['error']}")
+            break
         result |= {"ran_at": log[-1]["at"], "model": model}
 
         if case.startswith("strategist"):
