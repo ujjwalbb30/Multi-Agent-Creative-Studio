@@ -61,11 +61,12 @@ Files: Dockerfile per specialist, `deploy/*.py`, `deploy/teardown_gcp.sh`, `.env
   `agents/critic/agent.py`, `agents/designer/agent.py`, `agents/project_manager/agent.py`,
   `agents/creative_director/agent.py`, `deploy/deploy_all_specialists.py`,
   `deploy/deploy_orchestrator.py`, `deploy/env_utils.py`.
-- [ ] M6 reliability: decide whether to retry a whole specialist turn when the model returns
-  `TOO_MANY_TOOL_CALLS` (seen on the Strategist in M2). `HttpRetryOptions` only retries HTTP
-  errors, so this needs its own policy; it belongs with the orchestrator's retry settings.
-  Today the Strategist's `after_model_callback` only turns the empty answer into a visible
-  "Research failed" message.
+- [ ] M6 reliability (decided in M2: retries live in the orchestrator): when the Strategist's
+  answer contains `⚠ No Google Search results were used` or `⚠ Research failed (`, the Creative
+  Director re-asks the Strategist once before moving on. In M2 the Strategist searched in only
+  about half of the ADK runs on the final instruction (see `project-docs/evidence/m2/NOTES.md`),
+  and `HttpRetryOptions` cannot catch this because the call itself succeeds (`STOP`) or ends with
+  `TOO_MANY_TOOL_CALLS`. The Strategist's `after_model_callback` only makes these cases visible.
 - [ ] M6 teardown: `deploy/teardown_gcp.sh` builds the images bucket name from the project ID
   (`<project>-campaign-images`) instead of reading `GCS_IMAGES_BUCKET`.
 
