@@ -61,6 +61,13 @@ Files: Dockerfile per specialist, `deploy/*.py`, `deploy/teardown_gcp.sh`, `.env
   `agents/critic/agent.py`, `agents/designer/agent.py`, `agents/project_manager/agent.py`,
   `agents/creative_director/agent.py`, `deploy/deploy_all_specialists.py`,
   `deploy/deploy_orchestrator.py`, `deploy/env_utils.py`.
+- [ ] M6 reliability: decide whether to retry a whole specialist turn when the model returns
+  `TOO_MANY_TOOL_CALLS` (seen on the Strategist in M2). `HttpRetryOptions` only retries HTTP
+  errors, so this needs its own policy; it belongs with the orchestrator's retry settings.
+  Today the Strategist's `after_model_callback` only turns the empty answer into a visible
+  "Research failed" message.
+- [ ] M6 teardown: `deploy/teardown_gcp.sh` builds the images bucket name from the project ID
+  (`<project>-campaign-images`) instead of reading `GCS_IMAGES_BUCKET`.
 
 **Answered from the repo:** every agent folder has a `retry.py` (retry config lives there), and the skill is at `workshop/starter/agents/copywriter/skills/instagram-copywriting/` (contains `SKILL.md`, `assets/`, `references/`). The numbered `# TODO` comments in `workshop/starter/` are the work list.
 
