@@ -1,11 +1,15 @@
 import datetime
 import logging
 import os
+from typing import Optional
 
 from dotenv import load_dotenv
 from google.adk.agents import Agent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.readonly_context import ReadonlyContext
+from google.adk.models import LlmResponse
 from google.adk.tools.google_search_tool import google_search
+from google.genai import types
 try:
     from .retry import GENERATE_CONTENT_CONFIG
 except ImportError:
@@ -28,9 +32,14 @@ Your job is RESEARCH ONLY. The Creative Director coordinates what happens next.
 Today's date is {today}. The current year is {year}.
 
 ## How to research
-- Use the google_search tool for every research area below. Do not answer from memory.
+- Before writing anything, call google_search at least once for EACH of the three
+  research areas below (audience, competitors, trends). Do not answer from memory.
 - ALWAYS include the current year ({year}) in every search query,
   e.g. "Gen Z sustainable products trends {year}".
+- Never cite a source, report, statistic, or brand fact that you did not get from
+  google_search results in this conversation.
+- If search returns nothing useful for an area, say so in that section
+  (e.g. "No reliable {year} data found for ...") instead of filling the gap.
 - Prefer sources from {year}. If you rely on an older source, say how old it is.
 
 ## What to research
@@ -77,6 +86,31 @@ def build_instruction(context: ReadonlyContext) -> str:
     )
 
 
+UNGROUNDED_WARNING = (
+    "\n\n⚠ No Google Search results were used for this response; "
+    "treat it as unverified."
+)
+
+
+def flag_missing_grounding(
+    callback_context: CallbackContext, llm_response: LlmResponse
+) -> Optional[LlmResponse]:
+    """Appends a visible warning when a final answer has no search grounding.
+
+    Only flags; it does not retry or change the research itself.
+    """
+    if llm_response.partial or not llm_response.content or not llm_response.content.parts:
+        return None
+    if not any(part.text and not part.thought for part in llm_response.content.parts):
+        return None
+    grounding = llm_response.grounding_metadata
+    if grounding and grounding.web_search_queries:
+        return None
+    logger.warning("Brand Strategist response has no grounding metadata")
+    llm_response.content.parts.append(types.Part(text=UNGROUNDED_WARNING))
+    return llm_response
+
+
 root_agent = Agent(
     name="brand_strategist",
     model=GEMINI_MODEL,
@@ -88,6 +122,7 @@ root_agent = Agent(
         "insights for an Instagram campaign. Does not write copy or designs."
     ),
     tools=[google_search],
+    after_model_callback=flag_missing_grounding,
 )
 
 logger.info("Brand Strategist agent created")
