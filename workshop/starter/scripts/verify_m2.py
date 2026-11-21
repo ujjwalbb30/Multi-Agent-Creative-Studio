@@ -73,6 +73,7 @@ SECTION_LABELS = [
 ]
 HASHTAG_BLOCK_MIN = 3
 UNGROUNDED_MARK = "No Google Search results were used"
+FAILED_MARK = "Research failed ("
 SKILL_TOOLS = {"list_skills", "load_skill", "load_skill_resource"}
 HASHTAG_RE = re.compile(r"(?<![\w&/])#[A-Za-z][\w]*")
 CAPTION_HEADER_RE = re.compile(r"^\*\*Caption\s+(\d+):\s*(.*?)\*\*\s*$", re.MULTILINE)
@@ -228,6 +229,7 @@ def strategist_checks(result: dict) -> list[dict]:
               f"blocks: {blocks}" if blocks else
               (f"single trend mentions allowed: {mentions}" if mentions else "")),
         check("answer is grounded (no ungrounded-research warning)", UNGROUNDED_MARK not in text),
+        check("research did not fail (no research-failed message)", FAILED_MARK not in text),
     ]
 
 
@@ -360,7 +362,7 @@ async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", nargs="+", choices=list(CASES), help="cases to run")
     parser.add_argument("--force", action="store_true", help="rerun cases already cached")
-    parser.add_argument("--budget", type=int, default=15, help="max paid agent runs in total (403s not counted)")
+    parser.add_argument("--budget", type=int, default=20, help="max paid agent runs in total (403s not counted)")
     parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT)
     args = parser.parse_args()
 
