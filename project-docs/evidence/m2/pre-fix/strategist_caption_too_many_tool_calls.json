@@ -1,0 +1,65 @@
+{
+  "prompt": "Write me an Instagram caption for AquaLeaf's new reusable water bottle. Just the caption with hashtags, no research needed.",
+  "final_text": "",
+  "tool_calls": [],
+  "web_search_queries": [],
+  "events": [
+    {
+      "author": "brand_strategist",
+      "partial": null,
+      "finish_reason": "FinishReason.TOO_MANY_TOOL_CALLS",
+      "error_code": "TOO_MANY_TOOL_CALLS",
+      "error_message": null,
+      "part_kinds": [],
+      "text_chars": 0,
+      "grounding_metadata": null,
+      "tool_use_prompt_tokens": null,
+      "thoughts_tokens": 713
+    }
+  ],
+  "ran_at": "2026-11-21T14:53:47",
+  "model": "gemini-3-flash-preview",
+  "commit": "95790e2",
+  "checks": [
+    {
+      "check": "final response is not empty",
+      "ok": false,
+      "detail": "0 chars"
+    },
+    {
+      "check": "all four section labels present",
+      "ok": false,
+      "detail": "missing: ['**Audience Insights:**', '**Competitive Analysis:**', '**Trending Topics:**', '**Key Strategic Insights:**']"
+    },
+    {
+      "check": "sections in the required order",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "check": "used google_search (web_search_queries recorded)",
+      "ok": false,
+      "detail": "0 queries"
+    },
+    {
+      "check": "every search query includes 2026",
+      "ok": false,
+      "detail": ""
+    },
+    {
+      "check": "no captions in output",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "no hashtag block (a line with 3+ hashtags)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "answer is grounded (no ungrounded-research warning)",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
