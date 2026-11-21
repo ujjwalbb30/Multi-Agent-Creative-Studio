@@ -161,12 +161,13 @@ async def run_agent(agent, prompt: str, history_text: str | None = None) -> dict
             ),
         )
 
-    tool_calls, queries, texts = [], [], []
+    tool_calls, queries, texts, diagnostics = [], [], [], []
     async for event in runner.run_async(
         user_id="verifier",
         session_id=session.id,
         new_message=types.Content(role="user", parts=[types.Part(text=prompt)]),
     ):
+        diagnostics.append(event_diagnostics(event))
         for call in event.get_function_calls():
             tool_calls.append({"name": call.name, "args": dict(call.args or {})})
         gm = event.grounding_metadata
@@ -180,6 +181,28 @@ async def run_agent(agent, prompt: str, history_text: str | None = None) -> dict
         "final_text": "\n".join(texts).strip(),
         "tool_calls": tool_calls,
         "web_search_queries": queries,
+        "events": diagnostics,
+    }
+
+
+def event_diagnostics(event: Event) -> dict:
+    """What each event carried, to tell 'model skipped search' from 'search failed'."""
+    parts = event.content.parts if event.content and event.content.parts else []
+    kinds = ["thought" if p.thought else "text" if p.text else "function_call" if p.function_call
+             else "function_response" if p.function_response else "other" for p in parts]
+    gm = event.grounding_metadata
+    usage = event.usage_metadata
+    return {
+        "author": event.author,
+        "partial": event.partial,
+        "finish_reason": str(event.finish_reason) if event.finish_reason else None,
+        "error_code": event.error_code,
+        "error_message": event.error_message,
+        "part_kinds": kinds,
+        "text_chars": sum(len(p.text) for p in parts if p.text and not p.thought),
+        "grounding_metadata": gm.model_dump(mode="json", exclude_none=True) if gm else None,
+        "tool_use_prompt_tokens": getattr(usage, "tool_use_prompt_token_count", None) if usage else None,
+        "thoughts_tokens": getattr(usage, "thoughts_token_count", None) if usage else None,
     }
 
 
@@ -194,6 +217,7 @@ def strategist_checks(result: dict) -> list[dict]:
     blocks = hashtag_blocks(text)
     mentions = hashtags(text)
     return [
+        check("final response is not empty", bool(text.strip()), f"{len(text)} chars"),
         check("all four section labels present", not missing, f"missing: {missing}" if missing else ""),
         check("sections in the required order", not missing and positions == sorted(positions)),
         check("used google_search (web_search_queries recorded)", bool(queries), f"{len(queries)} queries"),
@@ -214,6 +238,8 @@ def copywriter_checks(result: dict) -> list[dict]:
                  for c in result["tool_calls"] if c["name"] == "load_skill_resource"]
     titles = [c["title"] for c in captions]
     out = [
+        check("final response is not empty", bool(result["final_text"].strip()),
+              f"{len(result['final_text'])} chars"),
         check("loaded the instagram-copywriting Skill (load_skill called)", "load_skill" in called,
               f"tools called: {sorted(called)}"),
         check("read a Skill resource (load_skill_resource called)", "load_skill_resource" in called,
@@ -264,7 +290,18 @@ def write_case(out_dir: pathlib.Path, case: str, title: str, result: dict, check
     if result["tool_calls"]:
         lines += ["## Tool calls", ""]
         lines += [f"- `{c['name']}` {json.dumps(c['args'])}" for c in result["tool_calls"]] + [""]
-    lines += ["## Final response", "", result["final_text"], ""]
+    if result.get("events"):
+        lines += ["## Event diagnostics", "",
+                  "| # | author | finish_reason | error | parts | text chars | grounding keys | tool-use tokens |",
+                  "|---|---|---|---|---|---|---|---|"]
+        for i, e in enumerate(result["events"], 1):
+            gm_keys = ", ".join(sorted(e["grounding_metadata"])) if e["grounding_metadata"] else "-"
+            err = f"{e['error_code']}: {e['error_message']}" if e["error_code"] else "-"
+            lines.append(f"| {i} | {e['author']} | {e['finish_reason'] or '-'} | {err} | "
+                         f"{', '.join(e['part_kinds']) or '-'} | {e['text_chars']} | {gm_keys} | "
+                         f"{e['tool_use_prompt_tokens'] if e['tool_use_prompt_tokens'] is not None else '-'} |")
+        lines.append("")
+    lines += ["## Final response", "", result["final_text"] or "_(empty)_", ""]
     (out_dir / f"{case}.md").write_text(redact("\n".join(lines)))
 
 
