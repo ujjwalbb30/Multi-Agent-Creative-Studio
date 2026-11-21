@@ -4,8 +4,8 @@ import pathlib
 
 from dotenv import load_dotenv
 from google.adk.agents import Agent
-
-# TODO 1: Import load_skill_from_dir and skill_toolset
+from google.adk.skills import load_skill_from_dir
+from google.adk.tools import skill_toolset
 
 try:
     from .retry import GENERATE_CONTENT_CONFIG
@@ -16,9 +16,19 @@ load_dotenv()
 
 logger = logging.getLogger("ai_creative_studio.copywriter")
 
-# TODO 2: Load the instagram-copywriting skill from the skills/ directory
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
+if not GEMINI_MODEL:
+    raise RuntimeError(
+        "GEMINI_MODEL is not set. Copy workshop/starter/.env.example to .env "
+        "and set GEMINI_MODEL, or pass it as an env var when deploying."
+    )
 
-# TODO 2: Create a SkillToolset with the loaded skill
+# Path is relative to this file so it resolves the same locally and in the container.
+instagram_skill = load_skill_from_dir(
+    pathlib.Path(__file__).parent / "skills" / "instagram-copywriting"
+)
+
+instagram_skill_toolset = skill_toolset.SkillToolset(skills=[instagram_skill])
 
 
 SYSTEM_INSTRUCTION = """You are an expert Social Media Copywriter specializing in Instagram content.
@@ -36,9 +46,9 @@ Follow the output format defined in the skill exactly.
 
 root_agent = Agent(
     name="copywriter",
-    model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+    model=GEMINI_MODEL,
     generate_content_config=GENERATE_CONTENT_CONFIG,
-    tools=[],  # TODO 3: Add the SkillToolset here
+    tools=[instagram_skill_toolset],
     instruction=SYSTEM_INSTRUCTION,
     description="Expert social media copywriter for creating engaging captions and copy",
 )

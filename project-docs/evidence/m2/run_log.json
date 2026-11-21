@@ -1,0 +1,103 @@
+[
+  {
+    "case": "strategist_a",
+    "at": "2026-11-21T13:56:03",
+    "instruction": "pre-fix (before b9b0855)"
+  },
+  {
+    "case": "strategist_b",
+    "at": "2026-11-21 (time not recorded; added by hand after the crash)",
+    "error": "ClientError: 403 PERMISSION_DENIED. Access requires an eligible paid billing account in a supported region, subject to our terms and policies.",
+    "instruction": "pre-fix (before b9b0855)",
+    "counted": false
+  },
+  {
+    "case": "strategist_b",
+    "at": "2026-11-21T14:08:05",
+    "instruction": "pre-fix (before b9b0855)"
+  },
+  {
+    "case": "strategist_caption",
+    "at": "2026-11-21T14:08:40",
+    "instruction": "pre-fix (before b9b0855)"
+  },
+  {
+    "case": "copywriter_alone",
+    "at": "2026-11-21T14:08:58",
+    "error": "ClientError: 403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Access requires an eligible paid billing account in a supported region, subject to our terms and policies.', 'status': 'PERMISSION_DENIED'}}",
+    "instruction": "pre-fix (before b9b0855)",
+    "counted": false
+  },
+  {
+    "case": "strategist_a",
+    "at": "2026-11-21T14:35:17",
+    "error": "ClientError: 403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Access requires an eligible paid billing account in a supported region, subject to our terms and policies.', 'status': 'PERMISSION_DENIED'}}",
+    "counted": false
+  },
+  {
+    "case": "strategist_a",
+    "at": "2026-11-21T14:48:44"
+  },
+  {
+    "case": "strategist_b",
+    "at": "2026-11-21T14:49:05"
+  },
+  {
+    "case": "strategist_caption",
+    "at": "2026-11-21T14:49:21"
+  },
+  {
+    "case": "copywriter_alone",
+    "at": "2026-11-21T14:49:43"
+  },
+  {
+    "case": "sequence",
+    "at": "2026-11-21T14:50:01"
+  },
+  {
+    "case": "strategist_b",
+    "at": "2026-11-21T14:53:30"
+  },
+  {
+    "case": "strategist_caption",
+    "at": "2026-11-21T14:53:47"
+  },
+  {
+    "case": "strategist_a",
+    "at": "2026-11-21T14:58:58"
+  },
+  {
+    "case": "strategist_b",
+    "at": "2026-11-21T14:59:18"
+  },
+  {
+    "case": "strategist_caption",
+    "at": "2026-11-21T14:59:36"
+  },
+  {
+    "case": "copywriter_alone",
+    "at": "2026-11-21T14:59:51"
+  },
+  {
+    "case": "sequence",
+    "at": "2026-11-21T15:00:11"
+  },
+  {
+    "case": "strategist_a",
+    "at": "2026-11-21T15:00:47"
+  },
+  {
+    "case": "sequence",
+    "at": "2026-11-21T15:01:26"
+  },
+  {
+    "case": "sequence_b",
+    "at": "2026-11-21T15:17:14",
+    "driver": "one-off final-runs driver (not committed)"
+  },
+  {
+    "case": "strategist_a",
+    "at": "2026-11-21T15:17:32",
+    "driver": "one-off final-runs driver (not committed)"
+  }
+]
