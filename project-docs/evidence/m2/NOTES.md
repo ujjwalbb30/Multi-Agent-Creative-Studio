@@ -23,8 +23,8 @@ empty error response with a visible `Research failed (<error_code>)` message. Au
 a whole turn is deferred to M6 (see `project-docs/plan.md`).
 
 **Known gap: the Strategist does not always search (accepted for M2, fixed in M6).**
-On the final instruction (`4b45aee`), the ADK agent searched in 2 of 4 runs. Brief A came back
-ungrounded twice in a row: the model stopped normally (`STOP`) and wrote "No reliable 2026 data
+On the final instruction (`4b45aee`), the ADK agent searched in 3 of 5 runs. Brief A came back
+ungrounded twice in a row (a third, final run for the record searched 6 times): the model stopped normally (`STOP`) and wrote "No reliable 2026 data
 found" in every section (kept in [flaky/](flaky/)). The callback flagged both runs and nothing was
 invented. To find the cause, three direct Gemini calls with the exact same instruction, brief and
 `google_search` tool (no ADK) all searched (3 queries each, all with the year). The request ADK
@@ -39,8 +39,20 @@ Strategist once when it sees either warning (see `project-docs/plan.md`, M6 reli
 |---|---|---|
 | `b12e7c9` first version | 2 of 3 | `strategist_b` invented a source |
 | `b9b0855` search every area | 2 of 5 | 1 "no data", 2 empty (`TOO_MANY_TOOL_CALLS`) |
-| `4b45aee` capped searches (final) | 2 of 4 | 2 "no data" on brief A |
+| `4b45aee` capped searches (final) | 3 of 5 | 2 "no data" on brief A |
 | Direct calls, final instruction (no ADK) | 3 of 3 | none |
+
+**How to read the two sequence rows.** `sequence` (brief A, 11/12) was fed the brief-A research
+from an earlier, ungrounded `strategist_a` run (kept as
+[flaky/strategist_a_ungrounded_2.md](flaky/strategist_a_ungrounded_2.md)), so its captions had no
+real research to build on and the reuse check correctly failed. The `strategist_a` row shows the
+later run for the record, which searched. `sequence_b` (12/12) is the sequence proof: the
+Copywriter was given the committed, grounded `strategist_b` research (3 searches, 9/9 checks) and
+reused 42 of its distinctive terms. There is no brief-B Copywriter-alone run, so its reuse check
+is the simpler "3 or more research terms" variant rather than the comparison used for brief A.
+`sequence_b` and the final `strategist_a` run were made with a one-off driver that calls
+`verify_m2.py`'s own `run_agent`, checks and evidence writer (not committed; no code changed).
+Both are labelled `ac84894`; `git diff ac84894 HEAD -- workshop/` was empty when they ran.
 
 **Checks added after the first runs** (each added because a real output exposed a gap):
 the grounded-answer check (`d2284ee`), the non-empty answer check (`95790e2`) and the

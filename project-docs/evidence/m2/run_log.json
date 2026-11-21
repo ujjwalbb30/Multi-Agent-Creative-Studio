@@ -89,5 +89,15 @@
   {
     "case": "sequence",
     "at": "2026-11-21T15:01:26"
+  },
+  {
+    "case": "sequence_b",
+    "at": "2026-11-21T15:17:14",
+    "driver": "one-off final-runs driver (not committed)"
+  },
+  {
+    "case": "strategist_a",
+    "at": "2026-11-21T15:17:32",
+    "driver": "one-off final-runs driver (not committed)"
   }
 ]

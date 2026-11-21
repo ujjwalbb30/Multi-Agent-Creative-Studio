@@ -1,8 +1,15 @@
 {
   "prompt": "Campaign brief: AquaLeaf is a new reusable, plant-based water bottle launching on Instagram to US college students (Gen Z). Goal: build awareness for the launch.",
-  "final_text": "**Audience Insights:**\n* No reliable 2026 data found for Gen Z US college student demographics, motivations, or pain points regarding plant-based water bottles.\n* No current data available regarding specific Instagram usage patterns or platform-specific behaviors for this demographic in 2026.\n\n**Competitive Analysis:**\n* No reliable 2026 data found for specific competitor brands, their market positioning, or their content styles in the reusable plant-based bottle category.\n* Gaps in the competitive landscape cannot be determined without active 2026 search results.\n\n**Trending Topics:**\n* No reliable 2026 data found for trending topics, formats (such as specific AR filters or video styles), or conversations within the sustainable hydration and eco-conscious product categories.\n\n**Key Strategic Insights:**\n* Strategic research is currently limited as no 2026 market data or audience insights could be retrieved through the required search tool.\n* Without verifiable 2026 search data, a specific launch strategy cannot be formulated according to the strict \"Research-only\" and \"No memory\" parameters.\n\n\n\u26a0 No Google Search results were used for this response; treat it as unverified.",
+  "final_text": "To support the Instagram launch of AquaLeaf for US college students, I have researched the 2026 landscape regarding Gen Z audience behaviors, the competitive hydration market, and current category trends.\n\n**Audience Insights:**\n*   **Platform Behavior:** As of late 2026, 90% of Gen Z college students use Instagram as a primary search engine for product discovery. While overall usage has seen a slight YoY decline, users aged 18\u201324 still spend 1.6 times more time on Instagram than the general population, particularly engaging with Reels and interactive features like polls.\n*   **Motivations:** 69% of Gen Z purchased a reusable bottle in the last year specifically for environmental sustainability. Hydration is viewed as a \"visible wellness metric\"\u2014a physical proxy for health that students carry across campus to signal self-care routines.\n*   **Pain Points:** There is a significant 2026 \"AI backlash,\" with 72% of Gen Z holding negative or cautious views toward AI-generated content. They are increasingly skeptical of \"performative activism\" and \"greenwashing,\" preferring radical authenticity and transparent communication over polished, high-production advertisements.\n*   **Purchasing Triggers:** 64% are willing to pay a premium for verified sustainable products. Student-specific offers are highly effective, with 86% likely to buy from a brand offering an exclusive college discount.\n\n**Competitive Analysis:**\n*   **Stanley (22.5% Market Share):** Dominates the lifestyle category with a focus on \"viral, lifestyle-driven appeal\" and status-based collecting. However, it faces 2026 backlash for promoting \"over-consumption\" (influencers owning 20\u201330 bottles), which contradicts core sustainability values.\n*   **Owala (12.1% Market Share):** Identified as the fastest-growing brand in 2026 (index score 93). It leads through functional innovation (leak-proof \"FreeSip\" lids) and high customization, but relies heavily on plastic components, leaving a gap for plant-based material alternatives.\n*   **S\u2019wheat & Yuhme (Niche Eco-Leaders):** These brands occupy the specific \"plant-based\" segment using materials like wheat stalk and sugarcane. While they lead in sustainability, they currently lack the \"status accessory\" appeal and viral lifestyle presence of larger competitors on Instagram.\n*   **Market Gap:** Most dominant brands focus on \"infinite color\" strategies that are beginning to fade in 2026 (trend score 28). There is a wide opening for a brand that combines high-performance sustainability (plant-based) with the \"rarity\" and \"maximalist\" aesthetic Gen Z currently craves.\n\n**Trending Topics:**\n*   **Eco-Anxiety & Advocacy:** Content is shifting from simple \"eco-friendly\" claims to active \"climate advocacy.\" Gen Z now expects brands to take clear positions on environmental issues rather than remaining neutral.\n*   **\"Dressing to Look Rare\":** A move away from \"quiet luxury\" toward maximalism and Y2K-inspired aesthetics. Reusable bottles are increasingly treated as a \"fashion manifesto\" rather than just a utility item.\n*   **Anti-Perfectionism (Lo-Fi Content):** Viral success in 2026 is driven by \"un-influencers\" and relatable voices using lo-fi, behind-the-scenes video formats rather than glossy, over-produced commercial content.\n*   **The 3-3-3 Rule & Capsule Living:** While maximalism is a visual trend, there is a parallel \"mindful consumption\" movement focusing on owning one high-quality, versatile item that lasts 10+ years.\n*   **Plant-Based Innovation:** Innovation in \"Plant-Based & Eco-Innovative Materials\" has a massive growth projection for late 2026 (index score 94), significantly outperforming \"Smart Hydration\" tech.\n\n**Key Strategic Insights:**\n*   **Value Alignment over Aesthetic:** Sustainability must be framed as a \"public position\" on waste. Highlighting the plant-based construction directly addresses the 2026 backlash against plastic-heavy \"eco\" brands.\n*   **Leverage Search Habits:** Since students use Instagram as a search engine, content must be optimized for discovery using specific 2026 keywords like \"sustainable hydration,\" \"eco-anxiety,\" and \"plant-based daily carry.\"\n*   **Interactive Community Building:** Interactive formats (polls/Q&As) are outperforming immersive technology like VR in 2026. Use these to let the college audience feel they are \"shaping\" the brand launch rather than just being marketed to.\n*   **Combat Over-Consumption:** Position AquaLeaf as the \"final bottle\"\u2014a high-quality, plant-based alternative to the trend of owning multiple steel bottles, appealing to the growing desire for ethical consumption.",
   "tool_calls": [],
-  "web_search_queries": [],
+  "web_search_queries": [
+    "Gen Z US college students Instagram usage and sustainability motivations 2026",
+    "Gen Z pain points with reusable water bottles 2026",
+    "top reusable water bottle competitors Instagram strategy 2026 Owala Stanley Hydro Flask",
+    "plant-based sustainable water bottle brands competitors 2026",
+    "trending topics water bottles sustainability Instagram 2026",
+    "Gen Z eco-lifestyle trends on Instagram 2026"
+  ],
   "events": [
     {
       "author": "brand_strategist",
@@ -11,23 +18,233 @@
       "error_code": null,
       "error_message": null,
       "part_kinds": [
-        "text",
         "text"
       ],
-      "text_chars": 1190,
-      "grounding_metadata": null,
+      "text_chars": 4614,
+      "grounding_metadata": {
+        "grounding_chunks": [
+          {
+            "web": {
+              "domain": "sheerid.com",
+              "title": "sheerid.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFsRvOBqcahhR9-ZEAdU-lnLvvPj0xNW70O29pww-pp4uV3POVev5YEsSKiHyZTpg9tLwGahVZ_BbjaksEhHZ_pycsHTplrndkt0blqDT0Mkc0xGn_Oei0pKZuYh39igLLapEi1Q41kYgMGnowRGMOx4ZpPO1cYWAyJiO5rJsjOdEOKFpsfXlXrxrCUoDqI4zqX-T9wAGr5LQ=="
+            }
+          },
+          {
+            "web": {
+              "domain": "market.us",
+              "title": "market.us",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFKFAdLqiu-bAwxSYByWA81P5qe8vaXbs-4XZLZl1WT89BTWXsprt20G-psnw48prjXv-DYE0BBCaFe4H7fckK6wKApv_iSM72unOCdHa5iqoSQhBs5Un_2U8dOskjpeWte7Cbkp5v-gOzRkbU_yihm-NGn5O2l0w=="
+            }
+          },
+          {
+            "web": {
+              "domain": "askattest.com",
+              "title": "askattest.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFeRw92O7oxYuyaMnhCXYRdDNMFHBpMU2gh_g_ApxuyKEzHaoV5MRgUXkz71sdZGd5NP9CPXIGGdnRxcYHTpeXIlFW4sNnE4QRCvD2DUgZQj-MXViHUBf4Bjwy4j1geI2BUdRVHAuUJzqeX4_KbkjgXFp29kE0dzzob"
+            }
+          },
+          {
+            "web": {
+              "domain": "contra.com",
+              "title": "contra.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEPUFnVQViizojQ7FhiAWaLBYWCvf_vSWlQRmo3y583KQSr9dmzw88S3Gf6shI0jyrzkhqfQEr4cDtqEClfXpZ_2Jwibtf7b0X-QGbGwsRlU90i7LYXWHkm3JONpBKkBmf3YdmPlGrdbMnGYe17JITIzrRdzlKhuyG3yBomL9OsNEZnAKg="
+            }
+          },
+          {
+            "web": {
+              "domain": "ctam.com",
+              "title": "ctam.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGFeK0aCRKVO1i19_EqJOX5PRsAZl-TpJ4Bh5s7YlexaK9GgyGO3JvWZ5PkbUysSTTKDzZorMRcqDy9mO7pI8aLgl12ce2Fz2K7_F0ZtLmG3_prSWYb4SBzuS2dtKHQIjTk6eNUQfM9a_24_PwizAEFCV9vLvDJoiwIJjtNzrb6hHFeLFwPEFyedCPZK7JZ6qtdvZPTmbx8hmM="
+            }
+          },
+          {
+            "web": {
+              "domain": "simporter.com",
+              "title": "simporter.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGFUylRtxX5runrWXqOKsIGJp8FcPJ0IY7BEM5yaX_evqnXubDX7xGMDkYmiq4Qa-UpDRWzT470nmEzrI4DvYiYZdpHEXAGM8quBSUerH-4SZvFoEbhazdiXKFD96KEMCdtvyXtbsXKL-iU_YGfUQ=="
+            }
+          },
+          {
+            "web": {
+              "domain": "istitutomarangoni.com",
+              "title": "istitutomarangoni.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH5BmRhgirSixMd1PA3zzfrzTi8D5cgcfwee_V8vkl6NK6sFzYY-ddrmfBNuACP54IY68COgDhtWTlO9I-6QYV1zw2PmgCiLIc3gD8WkhhFhaKYZTLr4R20N8ufklu5XIVnGHhMyA_eAIUBG43E6e3lRCgULtAHMIB2xvAeEP7eHQkNghv2R5W2FZ3lGjzIl-PTqNZMjJ8tOaeFkIy9nFckGue78qsq"
+            }
+          },
+          {
+            "web": {
+              "domain": "livehyv.com",
+              "title": "livehyv.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGLa3SrcLm1hsYH8CmrSvCVcoh9cNfFP7bFS6WgBm2b7CURroomBfMRnjUA6OWaLDASE66aKolC5oOIhXRqHkBdEWKsNU4hUREY44Yv5gfNdlSEhlbTeN3aOvMPv3yA-5F93e4qemqcG45l8_2whtYq0GbbExU6eEWeqNMrZAmc5KiU1j80F295otgqWA=="
+            }
+          },
+          {
+            "web": {
+              "domain": "packeze.com",
+              "title": "packeze.com",
+              "uri": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQFF1J7IDQNPLpA0OWqBFDfmZnQqdLakGshXl_A-qMxsE0BKe3CG_x4ZWYOW_s6odrnucocCamVCNSFk-ebM5yiPEoGNYFD189JUTpjrWk2gEZX2WRuxcad2NH1R0fBqNjJUBkZnh9fvK0kkbPLxa8c5ttUEon7kxQSI8g=="
+            }
+          }
+        ],
+        "grounding_supports": [
+          {
+            "grounding_chunk_indices": [
+              0
+            ],
+            "segment": {
+              "start_index": 229,
+              "end_index": 366,
+              "text": "*   **Platform Behavior:** As of late 2026, 90% of Gen Z college students use Instagram as a primary search engine for product discovery."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              1
+            ],
+            "segment": {
+              "start_index": 581,
+              "end_index": 706,
+              "text": "*   **Motivations:** 69% of Gen Z purchased a reusable bottle in the last year specifically for environmental sustainability."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              2
+            ],
+            "segment": {
+              "start_index": 852,
+              "end_index": 997,
+              "text": "*   **Pain Points:** There is a significant 2026 \"AI backlash,\" with 72% of Gen Z holding negative or cautious views toward AI-generated content."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              3
+            ],
+            "segment": {
+              "start_index": 998,
+              "end_index": 1185,
+              "text": "They are increasingly skeptical of \"performative activism\" and \"greenwashing,\" preferring radical authenticity and transparent communication over polished, high-production advertisements."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              4
+            ],
+            "segment": {
+              "start_index": 1186,
+              "end_index": 1282,
+              "text": "*   **Purchasing Triggers:** 64% are willing to pay a premium for verified sustainable products."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              0
+            ],
+            "segment": {
+              "start_index": 1283,
+              "end_index": 1404,
+              "text": "Student-specific offers are highly effective, with 86% likely to buy from a brand offering an exclusive college discount."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              5
+            ],
+            "segment": {
+              "start_index": 2318,
+              "end_index": 2448,
+              "text": "*   **Market Gap:** Most dominant brands focus on \"infinite color\" strategies that are beginning to fade in 2026 (trend score 28)."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              4,
+              3
+            ],
+            "segment": {
+              "start_index": 2752,
+              "end_index": 2855,
+              "text": "Gen Z now expects brands to take clear positions on environmental issues rather than remaining neutral."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              6
+            ],
+            "segment": {
+              "start_index": 2856,
+              "end_index": 2967,
+              "text": "*   **\"Dressing to Look Rare\":** A move away from \"quiet luxury\" toward maximalism and Y2K-inspired aesthetics."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              7,
+              8
+            ],
+            "segment": {
+              "start_index": 2968,
+              "end_index": 3067,
+              "text": "Reusable bottles are increasingly treated as a \"fashion manifesto\" rather than just a utility item."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              3
+            ],
+            "segment": {
+              "start_index": 3068,
+              "end_index": 3283,
+              "text": "*   **Anti-Perfectionism (Lo-Fi Content):** Viral success in 2026 is driven by \"un-influencers\" and relatable voices using lo-fi, behind-the-scenes video formats rather than glossy, over-produced commercial content."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              5
+            ],
+            "segment": {
+              "start_index": 3486,
+              "end_index": 3688,
+              "text": "*   **Plant-Based Innovation:** Innovation in \"Plant-Based & Eco-Innovative Materials\" has a massive growth projection for late 2026 (index score 94), significantly outperforming \"Smart Hydration\" tech."
+            }
+          },
+          {
+            "grounding_chunk_indices": [
+              2
+            ],
+            "segment": {
+              "start_index": 4162,
+              "end_index": 4290,
+              "text": "*   **Interactive Community Building:** Interactive formats (polls/Q&As) are outperforming immersive technology like VR in 2026."
+            }
+          }
+        ],
+        "search_entry_point": {
+          "rendered_content": "<style>\n.container {\n  align-items: center;\n  border-radius: 8px;\n  display: flex;\n  font-family: Google Sans, Roboto, sans-serif;\n  font-size: 14px;\n  line-height: 20px;\n  padding: 8px 12px;\n}\n.chip {\n  display: inline-block;\n  border: solid 1px;\n  border-radius: 16px;\n  min-width: 14px;\n  padding: 5px 16px;\n  text-align: center;\n  user-select: none;\n  margin: 0 8px;\n  -webkit-tap-highlight-color: transparent;\n}\n.carousel {\n  overflow: auto;\n  scrollbar-width: none;\n  white-space: nowrap;\n  margin-right: -12px;\n}\n.headline {\n  display: flex;\n  margin-right: 4px;\n}\n.gradient-container {\n  position: relative;\n}\n.gradient {\n  position: absolute;\n  transform: translate(3px, -9px);\n  height: 36px;\n  width: 9px;\n}\n@media (prefers-color-scheme: light) {\n  .container {\n    background-color: #fafafa;\n    box-shadow: 0 0 0 1px #0000000f;\n  }\n  .headline-label {\n    color: #1f1f1f;\n  }\n  .chip {\n    background-color: #ffffff;\n    border-color: #d2d2d2;\n    color: #5e5e5e;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #f2f2f2;\n  }\n  .chip:focus {\n    background-color: #f2f2f2;\n  }\n  .chip:active {\n    background-color: #d8d8d8;\n    border-color: #b6b6b6;\n  }\n  .logo-dark {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #fafafa 15%, #fafafa00 100%);\n  }\n}\n@media (prefers-color-scheme: dark) {\n  .container {\n    background-color: #1f1f1f;\n    box-shadow: 0 0 0 1px #ffffff26;\n  }\n  .headline-label {\n    color: #fff;\n  }\n  .chip {\n    background-color: #2c2c2c;\n    border-color: #3c4043;\n    color: #fff;\n    text-decoration: none;\n  }\n  .chip:hover {\n    background-color: #353536;\n  }\n  .chip:focus {\n    background-color: #353536;\n  }\n  .chip:active {\n    background-color: #464849;\n    border-color: #53575b;\n  }\n  .logo-light {\n    display: none;\n  }\n  .gradient {\n    background: linear-gradient(90deg, #1f1f1f 15%, #1f1f1f00 100%);\n  }\n}\n</style>\n<div class=\"container\">\n  <div class=\"headline\">\n    <svg class=\"logo-light\" width=\"18\" height=\"18\" viewBox=\"9 9 35 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M42.8622 27.0064C42.8622 25.7839 42.7525 24.6084 42.5487 23.4799H26.3109V30.1568H35.5897C35.1821 32.3041 33.9596 34.1222 32.1258 35.3448V39.6864H37.7213C40.9814 36.677 42.8622 32.2571 42.8622 27.0064V27.0064Z\" fill=\"#4285F4\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 43.8555C30.9659 43.8555 34.8687 42.3195 37.7213 39.6863L32.1258 35.3447C30.5898 36.3792 28.6306 37.0061 26.3109 37.0061C21.8282 37.0061 18.0195 33.9811 16.6559 29.906H10.9194V34.3573C13.7563 39.9841 19.5712 43.8555 26.3109 43.8555V43.8555Z\" fill=\"#34A853\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.6559 29.8904C16.3111 28.8559 16.1074 27.7588 16.1074 26.6146C16.1074 25.4704 16.3111 24.3733 16.6559 23.3388V18.8875H10.9194C9.74388 21.2072 9.06992 23.8247 9.06992 26.6146C9.06992 29.4045 9.74388 32.022 10.9194 34.3417L15.3864 30.8621L16.6559 29.8904V29.8904Z\" fill=\"#FBBC05\"/>\n      <path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M26.3109 16.2386C28.85 16.2386 31.107 17.1164 32.9095 18.8091L37.8466 13.8719C34.853 11.082 30.9659 9.3736 26.3109 9.3736C19.5712 9.3736 13.7563 13.245 10.9194 18.8875L16.6559 23.3388C18.0195 19.2636 21.8282 16.2386 26.3109 16.2386V16.2386Z\" fill=\"#EA4335\"/>\n    </svg>\n    <svg class=\"logo-dark\" width=\"18\" height=\"18\" viewBox=\"0 0 48 48\" xmlns=\"http://www.w3.org/2000/svg\">\n      <circle cx=\"24\" cy=\"23\" fill=\"#FFF\" r=\"22\"/>\n      <path d=\"M33.76 34.26c2.75-2.56 4.49-6.37 4.49-11.26 0-.89-.08-1.84-.29-3H24.01v5.99h8.03c-.4 2.02-1.5 3.56-3.07 4.56v.75l3.91 2.97h.88z\" fill=\"#4285F4\"/>\n      <path d=\"M15.58 25.77A8.845 8.845 0 0 0 24 31.86c1.92 0 3.62-.46 4.97-1.31l4.79 3.71C31.14 36.7 27.65 38 24 38c-5.93 0-11.01-3.4-13.45-8.36l.17-1.01 4.06-2.85h.8z\" fill=\"#34A853\"/>\n      <path d=\"M15.59 20.21a8.864 8.864 0 0 0 0 5.58l-5.03 3.86c-.98-2-1.53-4.25-1.53-6.64 0-2.39.55-4.64 1.53-6.64l1-.22 3.81 2.98.22 1.08z\" fill=\"#FBBC05\"/>\n      <path d=\"M24 14.14c2.11 0 4.02.75 5.52 1.98l4.36-4.36C31.22 9.43 27.81 8 24 8c-5.93 0-11.01 3.4-13.45 8.36l5.03 3.85A8.86 8.86 0 0 1 24 14.14z\" fill=\"#EA4335\"/>\n    </svg>\n    <div class=\"gradient-container\"><div class=\"gradient\"></div></div>\n  </div>\n  <div class=\"carousel\">\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHkj3Bw6DXXtZJ_tiuZcqMTrP8afFPdsxlcWrA04CUou94dI-qpsRVTzozlnJ-weWrU38LOXXjlZr7D_VRra4176Jr3OkV5EXG4aqLbhzKEAeXzeAP4dgs_Sxyw-Y-CuDf72xxI8PVeJ9xomm4qHNohImEDmSqQT_baY9wKjJu0KsyZn3RGzpksIlAgAvj-D2PPB4l4-ntZBuH77zw3jgAsborToOlsiaacog5kIiiV1-Yuxm98NZs9W8OYa6oXlA==\">plant-based sustainable water bottle brands competitors 2026</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF37ND6mxQWYt8pd5KLV-3m5KkWQOmcilCmJgEhMk6b82F261KqBnIx2jEL9V-r_FhtJJ5Z72ct2qibro7Ll-rFC4gzkd4M3b-J-Rvsk5WFL9uFLifHI8qwNxpyH0SybGnLlOnUHux0o_hv41SESMoN3sMaLb771Hc_jmEgAdXgkrsL41ZZbJ1yDDq8aY898s_wqVJsOg6VOSnUHmD7JmaLSHLTCNFrGohK-X8frPiCyJDD0HN8FmHBXc8H5Vhx-qubLz5fgrhCnYf5FL6Av0u9cCrXmnzkSVvj8Q==\">top reusable water bottle competitors Instagram strategy 2026 Owala Stanley Hydro Flask</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGvMhTovYapZdf6XXn7TgnninmiRGxP2dSRnDDnm93a0Bj-pQ7rq4T0u1tsV4yoo0Jwy9FLMrKij4t2gYboGKUul_t4JAHOpPcIWIGTm9aiWtP0oMLR5AGWKOjewWRkiKU0xqaJ1sPI34y2_FGA0vAz7G6bOMAmOUejG-EiPboKxJVt4sxuelGXbd4S00m5kHYnr_w4kcxAkJlMSKxT0ALGp0FLPNLm0DIyBAuJ2H_jufdMwi0YsDvCE73VWz__Y1ItRK6o8ZblsrlM10mUEWmx\">Gen Z US college students Instagram usage and sustainability motivations 2026</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG-7-r1lXGz71FJib4q7Pbd3Qwd5c_7HbeoAx7g8yk_bqvlmqwCunv__wVkH1eDSEWJqZDF-qRfJrvNER1EtJG1smU8-YokYrG_EvywN7krHeCerkr9KUvi9zX9zaJ0elDxBShclmP4Amcdy-DvXWxFQMv9Q3ydtje3HnwsVUwyLJ18f6iIUT7aMsWf5H2IDSeR4YXHY9F7WFKKPxWxPc55YIpFPB5BNLSm_uUhbVdKEVlKQxog\">Gen Z pain points with reusable water bottles 2026</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQHw4qIDyVSKn_V8KH7XupkwvcHI7DdN3now4i5qsRJFuAE-ESd9MW8MAbCHq6_jxJi7ZDTY8WvcL4sBPFopT7Pn2vjCP7cO32JETJGj40pZGTQUr8M_GuVG7Pa2u-1el0QIP8DDXcLUOK_7l7uc_ejU4vWeDezQGcGaDm0BIQoQm8i4Oo8WhwEXsdTUIxX7wSojOtwNGjhVKzTwiYz0cpnDkbu3vGFfoooyBE2yK1t407Ug0VDLDuGhQele2NkS\">trending topics water bottles sustainability Instagram 2026</a>\n    <a class=\"chip\" href=\"https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF3v6SvGaXVAqUV5oR-2VMp7LcVM_cJEEk7fpkxeuvX3qB1iH5TuBb2FAn7BWmdf0Qi0yGPL2ZYhWjgTHZOGB4X2n7CAvIpDGIWfk0YPG9SpySFxRk7pw0_xav0PC7pF71AFN5VMZZzQAYbeVycMJf3d9M15ZtuRjZh9uVE8nD83A6l4AI0pvJqOkbCe_RNZY-49dDz6TGyt1yGilMQ-qOpZHKPFt7Npfre3aLY0QQ=\">Gen Z eco-lifestyle trends on Instagram 2026</a>\n  </div>\n</div>\n"
+        },
+        "web_search_queries": [
+          "Gen Z US college students Instagram usage and sustainability motivations 2026",
+          "Gen Z pain points with reusable water bottles 2026",
+          "top reusable water bottle competitors Instagram strategy 2026 Owala Stanley Hydro Flask",
+          "plant-based sustainable water bottle brands competitors 2026",
+          "trending topics water bottles sustainability Instagram 2026",
+          "Gen Z eco-lifestyle trends on Instagram 2026"
+        ]
+      },
       "tool_use_prompt_tokens": null,
-      "thoughts_tokens": 3367
+      "thoughts_tokens": 1616
     }
   ],
-  "ran_at": "2026-11-21T15:00:47",
+  "ran_at": "2026-11-21T15:17:32",
   "model": "gemini-3-flash-preview",
   "commit": "ac84894",
   "checks": [
     {
       "check": "final response is not empty",
       "ok": true,
-      "detail": "1191 chars"
+      "detail": "4614 chars"
     },
     {
       "check": "all four section labels present",
@@ -41,12 +258,12 @@
     },
     {
       "check": "used google_search (web_search_queries recorded)",
-      "ok": false,
-      "detail": "0 queries"
+      "ok": true,
+      "detail": "6 queries"
     },
     {
       "check": "every search query includes 2026",
-      "ok": false,
+      "ok": true,
       "detail": ""
     },
     {
@@ -61,7 +278,7 @@
     },
     {
       "check": "answer is grounded (no ungrounded-research warning)",
-      "ok": false,
+      "ok": true,
       "detail": ""
     },
     {
