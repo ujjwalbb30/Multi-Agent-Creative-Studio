@@ -4,6 +4,7 @@ import os
 
 from dotenv import load_dotenv
 from google.adk.agents import Agent
+from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.tools.google_search_tool import google_search
 try:
     from .retry import GENERATE_CONTENT_CONFIG
@@ -14,38 +15,79 @@ load_dotenv()
 
 logger = logging.getLogger("ai_creative_studio.brand_strategist")
 
-# TODO 1: Define SYSTEM_INSTRUCTION
-# The Brand Strategist is a RESEARCH-ONLY agent. It should:
-#   - Search for target audience insights (use google_search with current year)
-#   - Analyze 2-3 competitor brands
-#   - Identify 3-5 trending topics in the product category
-#   - Return structured output with sections:
-#       **Audience Insights:** ...
-#       **Competitive Analysis:** ...
-#       **Trending Topics:** ...
-#       **Key Strategic Insights:** ...
-#
-# Important constraints to include in the instruction:
-#   - DO NOT create captions, copy, or designs
-#   - RESEARCH ONLY — the Creative Director coordinates next steps
-#   - Always include the current year in search queries
-#   - Today's date is: {datetime.date.today().strftime("%B %d, %Y")}
-SYSTEM_INSTRUCTION = """
-# TODO 1: Write the Brand Strategist system instruction here
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
+if not GEMINI_MODEL:
+    raise RuntimeError(
+        "GEMINI_MODEL is not set. Copy workshop/starter/.env.example to .env "
+        "and set GEMINI_MODEL, or pass it as an env var when deploying."
+    )
+
+SYSTEM_INSTRUCTION_TEMPLATE = """You are a Brand Strategist on an Instagram campaign team.
+Your job is RESEARCH ONLY. The Creative Director coordinates what happens next.
+
+Today's date is {today}. The current year is {year}.
+
+## How to research
+- Use the google_search tool for every research area below. Do not answer from memory.
+- ALWAYS include the current year ({year}) in every search query,
+  e.g. "Gen Z sustainable products trends {year}".
+- Prefer sources from {year}. If you rely on an older source, say how old it is.
+
+## What to research
+1. Target audience: demographics, motivations, pain points, and how they use Instagram.
+2. 2-3 competitor brands: their positioning, content style, and the gaps they leave open.
+3. 3-5 trending topics, formats, or conversations in the product category right now.
+
+## Output format
+Return exactly these four sections, in this order, with these exact labels:
+
+**Audience Insights:**
+...
+
+**Competitive Analysis:**
+...
+
+**Trending Topics:**
+...
+
+**Key Strategic Insights:**
+...
+
+Use short bullet points with concrete facts, names, and numbers where you found them.
+
+## Scope rules (strict)
+- DO NOT write captions, hashtags, slogans, taglines, ad copy, or post text.
+- DO NOT propose visuals, image prompts, layouts, or designs.
+- If the user asks for a caption, copy, or a design, do not produce it. Say in one line
+  that the Copywriter or Designer handles that, then deliver the four research sections
+  for the brand or product in the request.
 """
 
-# TODO 2: Create the root_agent
-# Use:
-#   name="brand_strategist"
-#   model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-#   tools=[google_search]
+
+def build_instruction(context: ReadonlyContext) -> str:
+    """Builds the instruction on every request so the date never goes stale.
+
+    A plain string instruction would freeze the date at import time on a
+    long-running Cloud Run container, and ADK would treat {braces} in it as
+    session-state placeholders.
+    """
+    today = datetime.date.today()
+    return SYSTEM_INSTRUCTION_TEMPLATE.format(
+        today=today.strftime("%B %d, %Y"), year=today.year
+    )
+
+
 root_agent = Agent(
     name="brand_strategist",
-    model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+    model=GEMINI_MODEL,
     generate_content_config=GENERATE_CONTENT_CONFIG,
-    # TODO 2: add instruction=SYSTEM_INSTRUCTION
-    # TODO 2: add description=
-    # TODO 2: add tools=
+    instruction=build_instruction,
+    description=(
+        "Research-only Brand Strategist: uses Google Search to return audience "
+        "insights, competitive analysis, trending topics, and key strategic "
+        "insights for an Instagram campaign. Does not write copy or designs."
+    ),
+    tools=[google_search],
 )
 
 logger.info("Brand Strategist agent created")
