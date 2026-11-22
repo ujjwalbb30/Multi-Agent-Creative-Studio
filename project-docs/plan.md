@@ -20,6 +20,14 @@ Files: `creative_director/agent.py`
 - [ ] Upstream output is passed forward as structured input
 - [ ] Final campaign contains research, captions, images, review and timeline
 - [ ] Generation limits and timeouts set on the orchestrator (easy to miss)
+  - Designer image latency (from M3, `designer/retry.py`): each `generate_image` call has a 180 s
+    timeout and 5 attempts, and timeouts are retried too. The SDK caps each wait at `max_delay`
+    (60 s by default in google-genai 1.75.0), so the waits are about 30, 60, 60, 60 s (~210 s).
+    Worst case per image: 5 x 180 s + ~210 s, about 18 minutes. Typical failure with fast 429s:
+    ~210 s, about 3.5 minutes. Measured in M3: 10.4-11.5 s per image (5 images, no retries).
+    A Designer turn makes one call per caption, in sequence, so 3 captions take ~35 s normally
+    and could take ~10 minutes with fast 429s. Size the orchestrator's A2A timeout for the
+    Designer with this in mind.
 
 ### 3. A2A & Distributed Architecture (15%) — M6 (each agent exposes its card from M2 on)
 Files: `creative_director/agent.py`, each specialist's A2A bootstrap, `deploy/deploy_all_specialists.py`, `.env` (`*_AGENT_URL`)
