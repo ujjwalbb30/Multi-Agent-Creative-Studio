@@ -195,12 +195,14 @@ async def test_tool() -> None:
 
 
 class FakeState(dict):
-    pass
+    def to_dict(self):
+        return dict(self)
 
 
 class FakeContext:
-    def __init__(self, user_text=""):
-        self.state = FakeState()
+    def __init__(self, user_text="", invocation_id="inv-1", function_call_id=None, state=None):
+        self.state = FakeState(state or {})
+        self.invocation_id, self.function_call_id = invocation_id, function_call_id
         self.user_content = types.Content(role="user", parts=[types.Part(text=user_text)])
 
 
@@ -209,18 +211,29 @@ def text_response(text, partial=False):
 
 
 def test_callbacks() -> None:
-    ctx = FakeContext(f"Review these. Images: **{A}**, `{B}`. Also {A}.")
-    ctx.state.update({"critic_reviews": [ok_review(A, 2)], "critic_guard": {"old": True}})
+    ctx = FakeContext(f"Review these. Images: **{A}**, `{B}`. Also {A}.", invocation_id="inv-2")
+    ctx.state.update({"critic_review:inv-1:c1": ok_review(A, 2), "critic_guard": {"old": True}})
     critic_agent.reset_review_state(ctx)
-    expect("reset clears old reviews and finds each distinct gs:// URI once",
-           ctx.state["critic_reviews"] == [] and ctx.state["critic_expected_uris"] == [A, B]
-           and ctx.state["critic_guard"] is None, ctx.state["critic_expected_uris"])
+    expect("reset clears the previous run's reviews and finds each distinct gs:// URI once",
+           ctx.state["critic_review:inv-1:c1"] is None and critic_agent.current_reviews(ctx) == []
+           and ctx.state["critic_expected_uris"] == [A, B] and ctx.state["critic_guard"] is None,
+           ctx.state["critic_expected_uris"])
 
+    # ADK runs parallel tool calls concurrently; each call gets its own copy of the
+    # state and the deltas are merged afterwards. Simulate exactly that.
     review_tool = type("T", (), {"name": "review_image"})()
-    critic_agent.record_review(review_tool, {"gcs_uri": A}, ctx, ok_review(A, 9))
-    critic_agent.record_review(review_tool, {"gcs_uri": B}, ctx, ok_review(B, 4))
-    critic_agent.record_review(type("T", (), {"name": "other"})(), {}, ctx, {"x": 1})
-    expect("record_review keeps only review_image results", len(ctx.state["critic_reviews"]) == 2)
+    t1 = FakeContext(invocation_id="inv-2", function_call_id="call-a", state=ctx.state)
+    t2 = FakeContext(invocation_id="inv-2", function_call_id="call-b", state=ctx.state)
+    critic_agent.record_review(review_tool, {"gcs_uri": A}, t1, ok_review(A, 9))
+    critic_agent.record_review(review_tool, {"gcs_uri": B}, t2, ok_review(B, 4))
+    critic_agent.record_review(type("T", (), {"name": "other"})(), {}, t2, {"x": 1})
+    ctx.state.update(t1.state)
+    ctx.state.update(t2.state)
+    reviews = critic_agent.current_reviews(ctx)
+    expect("parallel review_image calls are both kept (one key per call)",
+           sorted(r["gcs_uri"] for r in reviews) == [A, B], [r["gcs_uri"] for r in reviews])
+    other = FakeContext(invocation_id="inv-3", state=ctx.state)
+    expect("reviews from another run are ignored", critic_agent.current_reviews(other) == [])
 
     fc = LlmResponse(content=types.Content(role="model", parts=[types.Part(function_call=types.FunctionCall(name="review_image", args={}))]))
     expect("guard ignores function-call responses", critic_agent.enforce_verdict(ctx, fc) is None)
@@ -228,8 +241,9 @@ def test_callbacks() -> None:
 
     out = critic_agent.enforce_verdict(ctx, text_response(verdict_text()))
     v = parse_verdict(out.content.parts[-1].text)
-    expect("guard rewrites the final verdict from recorded reviews",
+    expect("guard rewrites the final verdict from recorded reviews (no false [REVIEW_ERROR])",
            v.visuals["Score"] == "4/10" and v.overall["All Approved"] == "NO"
+           and "[REVIEW_ERROR]" not in out.content.parts[-1].text
            and ctx.state["critic_guard"]["parsed"] and ctx.state["critic_guard"]["corrections"], v.visuals)
 
     junk = "I think it's great!"

@@ -95,7 +95,10 @@ Evaluation criteria:
 - Engagement potential
 """
 
-REVIEWS_KEY = "critic_reviews"
+# One state key per review_image call: ADK runs parallel tool calls concurrently,
+# and each call sees its own copy of the state, so appending to one shared list
+# would lose results. Keys are scoped to the run (invocation) and the call.
+REVIEW_KEY_PREFIX = "critic_review:"
 EXPECTED_URIS_KEY = "critic_expected_uris"
 GUARD_KEY = "critic_guard"
 GCS_URI_RE = re.compile(r"gs://[a-z0-9][a-z0-9._-]*/[^\s)\]\"'`,;*]+")
@@ -108,7 +111,9 @@ def reset_review_state(callback_context: CallbackContext) -> None:
         if p.text
     )
     uris = list(dict.fromkeys(u.rstrip(".") for u in GCS_URI_RE.findall(text)))
-    callback_context.state[REVIEWS_KEY] = []
+    for key in list(callback_context.state.to_dict()):
+        if key.startswith(REVIEW_KEY_PREFIX):
+            callback_context.state[key] = None
     callback_context.state[EXPECTED_URIS_KEY] = uris
     callback_context.state[GUARD_KEY] = None
     return None
@@ -121,8 +126,14 @@ def record_review(
     if tool.name == "review_image" and isinstance(tool_response, dict):
         result = dict(tool_response)
         result.setdefault("gcs_uri", args.get("gcs_uri"))
-        tool_context.state[REVIEWS_KEY] = list(tool_context.state.get(REVIEWS_KEY) or []) + [result]
+        key = f"{REVIEW_KEY_PREFIX}{tool_context.invocation_id}:{tool_context.function_call_id}"
+        tool_context.state[key] = result
     return None
+
+
+def current_reviews(callback_context: CallbackContext) -> list[dict]:
+    prefix = f"{REVIEW_KEY_PREFIX}{callback_context.invocation_id}:"
+    return [v for k, v in callback_context.state.to_dict().items() if k.startswith(prefix) and v]
 
 
 def enforce_verdict(callback_context: CallbackContext, llm_response: LlmResponse) -> Optional[LlmResponse]:
@@ -141,7 +152,7 @@ def enforce_verdict(callback_context: CallbackContext, llm_response: LlmResponse
         return None
 
     text = "".join(p.text for p in text_parts)
-    reviews = list(callback_context.state.get(REVIEWS_KEY) or [])
+    reviews = current_reviews(callback_context)
     expected = list(callback_context.state.get(EXPECTED_URIS_KEY) or [])
     try:
         fixed, corrections = enforce(text, reviews, expected)

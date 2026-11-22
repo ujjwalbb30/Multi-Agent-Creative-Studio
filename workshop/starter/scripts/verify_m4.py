@@ -185,6 +185,9 @@ def case_checks(case: str, kind: str, uris: list[str], r: dict) -> list[dict]:
         residual = [str(e)]
     out.append(check("final verdict is consistent with the review results and the rules", residual == [],
                      f"{residual}" if residual else ""))
+    any_failed = len(ok_reviews) < len(reviews) or len(reviews) < len(uris)
+    out.append(check("no [REVIEW_ERROR] unless a review actually failed",
+                     any_failed or "[REVIEW_ERROR]" not in text))
     tool_scores = [x["score"] for x in ok_reviews]
     if uris:
         out.append(check("VISUALS score is the lowest review score",
