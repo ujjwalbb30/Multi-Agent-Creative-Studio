@@ -21,3 +21,10 @@ GENERATE_CONTENT_CONFIG = types.GenerateContentConfig(
         timeout=120_000,  # 120 second timeout for model calls
     ),
 )
+
+# The review_image tool calls Gemini with its own client, so it needs its own
+# retry settings (same policy as the Critic's text calls).
+REVIEW_HTTP_OPTIONS = types.HttpOptions(
+    retry_options=RETRY_CONFIG,
+    timeout=120_000,
+)

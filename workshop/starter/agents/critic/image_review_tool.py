@@ -5,6 +5,13 @@ from typing import Literal, Optional
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
+try:
+    from .retry import REVIEW_HTTP_OPTIONS
+except ImportError:
+    from retry import REVIEW_HTTP_OPTIONS
+
+# Same threshold as the Critic's scoring guide: 7 and above is APPROVED.
+APPROVAL_THRESHOLD = 7
 
 
 class _GeminiReview(BaseModel):
@@ -20,15 +27,23 @@ class ImageReviewResult(BaseModel):
     """Structured result returned to the Critic agent by the review_image tool."""
     status: Literal["success", "error"]
     concept_name: str
+    gcs_uri: Optional[str] = None
     score: Optional[int] = None
     approval_status: Optional[Literal["APPROVED", "NEEDS_REVISION"]] = None
     what_works: Optional[str] = None
     issues: Optional[str] = None
     suggestions: Optional[str] = None
+    # Set when the model's approval_status disagreed with its own score.
+    status_overridden: Optional[bool] = None
+    model_approval_status: Optional[Literal["APPROVED", "NEEDS_REVISION"]] = None
     error: Optional[str] = None
 
 
-def review_image(gcs_uri: str, concept_name: str, campaign_context: str) -> ImageReviewResult:
+def status_for_score(score: int) -> Literal["APPROVED", "NEEDS_REVISION"]:
+    return "APPROVED" if score >= APPROVAL_THRESHOLD else "NEEDS_REVISION"
+
+
+async def review_image(gcs_uri: str, concept_name: str, campaign_context: str) -> dict:
     """
     Review an image stored in GCS using Gemini multimodal.
 
@@ -41,12 +56,22 @@ def review_image(gcs_uri: str, concept_name: str, campaign_context: str) -> Imag
         campaign_context: Brief describing the campaign, brand voice, target audience
 
     Returns:
-        ImageReviewResult with score (1-10), approval_status (APPROVED/NEEDS_REVISION),
-        and structured feedback fields. On error, status="error" and error contains the message.
+        A dict (ImageReviewResult fields) with score (1-10), approval_status
+        (APPROVED/NEEDS_REVISION) and structured feedback. On error, status="error"
+        and error contains the message.
     """
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
     location = os.environ.get("GOOGLE_CLOUD_LOCATION", "global")
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.environ.get("GEMINI_MODEL")
+
+    def error(message: str) -> dict:
+        return ImageReviewResult(status="error", concept_name=concept_name, gcs_uri=gcs_uri,
+                                 error=message).model_dump(exclude_none=True)
+
+    if not model:
+        return error("GEMINI_MODEL env var not set")
+    if not (gcs_uri or "").startswith("gs://"):
+        return error(f"Not a GCS URI: {gcs_uri!r}")
 
     try:
         client = genai.Client(vertexai=True, project=project_id, location=location)
@@ -56,9 +81,8 @@ def review_image(gcs_uri: str, concept_name: str, campaign_context: str) -> Imag
         mime_map = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "webp": "image/webp"}
         mime_type = mime_map.get(ext, "image/png")
 
-        # TODO 1: Create an image part from the GCS URI using Part.from_uri().
-        # Pass file_uri=gcs_uri and mime_type=mime_type.
         # Vertex AI fetches the image server-side - no GCS credentials needed here.
+        image_part = types.Part.from_uri(file_uri=gcs_uri, mime_type=mime_type)
 
         prompt = f"""You are reviewing an AI-generated image for an Instagram campaign.
 
@@ -70,6 +94,8 @@ Evaluate this image on:
 - Brand alignment and audience fit
 - Instagram platform suitability
 - Visual-copy alignment potential
+- Real brand logos or trademarks (other than the campaign's own brand): flag any you can see
+- Garbled or misspelled text anywhere in the image: flag it
 
 Scoring guide:
 - 9-10: APPROVED (exceptional)
@@ -78,22 +104,28 @@ Scoring guide:
 - 1-4:  NEEDS_REVISION (significant issues)
 """
 
-        # TODO 2: Call client.models.generate_content() with:
-        #   - model=model
-        #   - contents=[image_part, prompt]
-        #   - config=types.GenerateContentConfig(
-        #       response_schema=_GeminiReview,
-        #       response_mime_type="application/json",
-        #     )
-        # Store the result in `response`.
+        # Async client so the review does not block the event loop.
+        response = await client.aio.models.generate_content(
+            model=model,
+            contents=[image_part, prompt],
+            config=types.GenerateContentConfig(
+                response_schema=_GeminiReview,
+                response_mime_type="application/json",
+                http_options=REVIEW_HTTP_OPTIONS,
+            ),
+        )
 
-        # TODO 3: Parse the response and return an ImageReviewResult.
-        # Use _GeminiReview.model_validate_json(response.text) to parse structured output.
-        # Return ImageReviewResult(status="success", concept_name=concept_name, **review.model_dump())
+        review = _GeminiReview.model_validate_json(response.text)
+        result = ImageReviewResult(status="success", concept_name=concept_name, gcs_uri=gcs_uri,
+                                   **review.model_dump())
+        # The status always follows the score (fixed rule, not a re-score).
+        expected = status_for_score(review.score)
+        if review.approval_status != expected:
+            result.status_overridden = True
+            result.model_approval_status = review.approval_status
+            result.approval_status = expected
+        # Plain dict: ADK wraps non-dict tool results as {"result": <object>}.
+        return result.model_dump(exclude_none=True)
 
     except Exception as e:
-        return ImageReviewResult(
-            status="error",
-            concept_name=concept_name,
-            error=str(e),
-        )
+        return error(f"{type(e).__name__}: {e}")
