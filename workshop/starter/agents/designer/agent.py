@@ -33,6 +33,7 @@ Each concept must include:
 
 IMPORTANT: After writing each concept, call the `generate_image` tool to produce the actual image.
 Use the concept name as `concept_name` (e.g. "caption1_concept_a") and the full image generation prompt.
+Pass `aspect_ratio="1:1"` for a square post (1080x1080) or `aspect_ratio="4:5"` for a portrait post (1080x1350).
 Include the returned `gcs_uri` in your response under each concept.
 
 Format for each caption:

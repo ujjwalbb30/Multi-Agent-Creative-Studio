@@ -1,0 +1,66 @@
+{
+  "prompt": "Photorealistic flat lay of a matte sage-green reusable water bottle on a light oak desk next to an open notebook and a small succulent, soft morning window light, minimalist, airy.",
+  "aspect_ratio": "1:1",
+  "tool_result": {
+    "status": "success",
+    "gcs_uri": "gs://<BUCKET>/campaign-images/tool_square-59196917.png",
+    "concept_name": "tool_square",
+    "aspect_ratio": "1:1"
+  },
+  "images": [
+    {
+      "gcs_uri": "gs://<BUCKET>/campaign-images/tool_square-59196917.png",
+      "copy": "images/tool_square.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 1649051,
+      "content_type": "image/png",
+      "seconds": 10.6
+    }
+  ],
+  "final_text": "",
+  "tool_calls": [],
+  "checks": [
+    {
+      "check": "tool returned status success",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "tool result contains no bytes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "gcs_uri points into the images bucket",
+      "ok": true,
+      "detail": "gs://<BUCKET>/campaign-images/tool_square-59196917.png"
+    },
+    {
+      "check": "object exists in the bucket",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "object is a real image (PNG/JPEG header parsed)",
+      "ok": true,
+      "detail": "image/png, 1649051 bytes"
+    },
+    {
+      "check": "pixel ratio matches 1:1 (\u00b13%)",
+      "ok": true,
+      "detail": "1024x1024 = 1.000"
+    },
+    {
+      "check": "compressed copy under 300 KB",
+      "ok": true,
+      "detail": "227 KB"
+    }
+  ],
+  "ran_at": "2026-11-21T16:39:59",
+  "commit": "a146ad6",
+  "text_model": "gemini-3-flash-preview",
+  "image_model": "gemini-3.1-flash-image"
+}
