@@ -19,6 +19,9 @@ blog.md
 /diagrams/
 workshop/diagrams/ai-creative-studio-architecture.drawio
 
+# ADK dev UI local state (full-size generated images, sessions) - never commit
+.adk/
+
 # Local test/scratch files
 test_*_local.py
 test_local_*.py
