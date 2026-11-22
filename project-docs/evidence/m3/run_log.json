@@ -1,0 +1,32 @@
+[
+  {
+    "case": "tool_square",
+    "at": "2026-11-21T16:39:57",
+    "seconds": 10.6,
+    "status": "success"
+  },
+  {
+    "case": "tool_portrait",
+    "at": "2026-11-21T16:40:18",
+    "seconds": 10.9,
+    "status": "success"
+  },
+  {
+    "case": "designer_sequence",
+    "at": "2026-11-21T16:40:42",
+    "seconds": 10.4,
+    "status": "success"
+  },
+  {
+    "case": "designer_sequence",
+    "at": "2026-11-21T16:40:42",
+    "seconds": 10.5,
+    "status": "success"
+  },
+  {
+    "case": "designer_sequence",
+    "at": "2026-11-21T16:40:43",
+    "seconds": 11.5,
+    "status": "success"
+  }
+]

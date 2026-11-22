@@ -1,0 +1,67 @@
+{
+  "prompt": "Photorealistic portrait shot of a college student walking across a sunny campus quad holding a matte sage-green reusable water bottle, shallow depth of field, warm golden-hour light.",
+  "aspect_ratio": "4:5",
+  "tool_result": {
+    "status": "success",
+    "gcs_uri": "gs://<BUCKET>/campaign-images/tool_portrait-35a00685.png",
+    "concept_name": "tool_portrait",
+    "aspect_ratio": "4:5"
+  },
+  "images": [
+    {
+      "gcs_uri": "gs://<BUCKET>/campaign-images/tool_portrait-35a00685.png",
+      "copy": null,
+      "size": [
+        928,
+        1152
+      ],
+      "bytes": 1864975,
+      "content_type": "image/png",
+      "seconds": 10.9,
+      "copy_note": "not committed (third-party logos)"
+    }
+  ],
+  "final_text": "",
+  "tool_calls": [],
+  "checks": [
+    {
+      "check": "tool returned status success",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "tool result contains no bytes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "gcs_uri points into the images bucket",
+      "ok": true,
+      "detail": "gs://<BUCKET>/campaign-images/tool_portrait-35a00685.png"
+    },
+    {
+      "check": "object exists in the bucket",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "object is a real image (PNG/JPEG header parsed)",
+      "ok": true,
+      "detail": "image/png, 1864975 bytes"
+    },
+    {
+      "check": "pixel ratio matches 4:5 (\u00b13%)",
+      "ok": true,
+      "detail": "928x1152 = 0.806"
+    },
+    {
+      "check": "compressed copy under 300 KB",
+      "ok": true,
+      "detail": "263 KB"
+    }
+  ],
+  "ran_at": "2026-11-21T16:40:20",
+  "commit": "a146ad6",
+  "text_model": "gemini-3-flash-preview",
+  "image_model": "gemini-3.1-flash-image"
+}
