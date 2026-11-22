@@ -21,3 +21,21 @@ GENERATE_CONTENT_CONFIG = types.GenerateContentConfig(
         timeout=120_000,  # 120 second timeout for model calls
     ),
 )
+
+# Image generation quota (DSQ) recovers slowly, so the image model gets more
+# attempts and a longer first wait than the text model. The SDK caps each wait at
+# max_delay (60 s by default), so the waits are about 30, 60, 60, 60 s.
+IMAGE_RETRY_CONFIG = types.HttpRetryOptions(
+    attempts=5,
+    exp_base=2,
+    initial_delay=30,
+    http_status_codes=[429, 500, 503, 504],
+)
+
+IMAGE_GENERATE_CONFIG = types.GenerateContentConfig(
+    response_modalities=["IMAGE", "TEXT"],
+    http_options=types.HttpOptions(
+        retry_options=IMAGE_RETRY_CONFIG,
+        timeout=180_000,  # 180 second timeout per image call
+    ),
+)
