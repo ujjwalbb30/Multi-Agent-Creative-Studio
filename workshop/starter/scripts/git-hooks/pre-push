@@ -1,0 +1,8 @@
+#!/bin/sh
+# Blocks a push if a Notion token, bearer header or project identifier is in a tracked file.
+# Install once: ln -sf ../../workshop/starter/scripts/git-hooks/pre-push .git/hooks/pre-push
+cd "$(git rev-parse --show-toplevel)/workshop/starter" || exit 1
+uv run python -W ignore scripts/check_secrets.py || {
+  echo "pre-push: secret scan failed; push blocked." >&2
+  exit 1
+}
