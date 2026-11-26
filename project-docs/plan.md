@@ -95,6 +95,12 @@ Files: Dockerfile per specialist, `deploy/*.py`, `deploy/teardown_gcp.sh`, `.env
   images bucket. Verify on Cloud Run that the Critic can read the images (`Part.from_uri` on
   `gs://`); grant `roles/storage.objectViewer` if needed. Local runs use the developer's own
   credentials, so they prove nothing about this.
+- [ ] M6 logging (from M5): check Cloud Run stderr / Cloud Logging for every service after a
+  deployed run, including a failed Notion call. notion-mcp-server writes the Authorization header
+  (the token) to stderr on HTTP errors; the PM starts it as `sh -c 'exec notion-mcp-server
+  2>/dev/null'` to prevent that. Confirm in Cloud Logging that no token, "Bearer" header or full
+  database ID appears (search the PM service logs for the token prefix and the last 4 characters
+  of each database ID, never the full values).
 - [ ] M6 teardown: `deploy/teardown_gcp.sh` builds the images bucket name from the project ID
   (`<project>-campaign-images`) instead of reading `GCS_IMAGES_BUCKET`.
 
