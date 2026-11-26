@@ -29,6 +29,11 @@ Goal: score "Excellent" on every criterion in `project-docs/rubric.md`.
 ## Hard rules
 - Never commit `.env`, API keys, service-account keys, Notion tokens or database IDs.
   Only `.env.example` with placeholders. Secrets belong in Secret Manager at deploy time.
+- Never print, cat, grep or otherwise read values from `.env`. To check configuration, report
+  only whether each variable is set. Code may load `.env` in-process, but must never output
+  its values.
+- The Notion token and database IDs must never appear in logs, evidence, test output or PRs.
+  Mask any ID to its last 4 characters (e.g. `…a1b2`).
 - No hardcoded model names, region, bucket or service URLs. Read them from env vars.
 - Ask before running any command that creates or changes cloud resources, billing or
   deployments (gcloud, deploy scripts). Show the command and what it does first.
