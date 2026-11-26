@@ -1,0 +1,51 @@
+[
+  {
+    "case": "critic_strong",
+    "at": "2026-11-21T18:58:45"
+  },
+  {
+    "case": "critic_weak",
+    "at": "2026-11-21T18:59:24"
+  },
+  {
+    "case": "critic_mixed",
+    "at": "2026-11-21T18:59:40"
+  },
+  {
+    "case": "critic_no_images",
+    "at": "2026-11-21T19:00:04"
+  },
+  {
+    "case": "critic_weak_2",
+    "at": "2026-11-21T19:00:13"
+  },
+  {
+    "case": "critic_mixed",
+    "at": "2026-11-21T19:01:43"
+  },
+  {
+    "case": "clean_image",
+    "kind": "image",
+    "at": "2026-11-26T00:32:32"
+  },
+  {
+    "case": "critic_strong",
+    "at": "2026-11-26T00:32:44"
+  },
+  {
+    "case": "critic_weak",
+    "at": "2026-11-26T00:32:58"
+  },
+  {
+    "case": "critic_no_images",
+    "at": "2026-11-26T00:33:16"
+  },
+  {
+    "case": "critic_weak_posts_good_visuals",
+    "at": "2026-11-26T00:33:24"
+  },
+  {
+    "case": "critic_strong_2",
+    "at": "2026-11-26T00:33:34"
+  }
+]

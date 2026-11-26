@@ -1,0 +1,14 @@
+{
+  "purpose": "Simpler-prompt input made to test the Critic's APPROVED path (M4); not Designer agent output.",
+  "prompt": "Photorealistic overhead still life: a small ceramic bowl of freshly roasted coffee beans and a matte stone cup of black coffee with a little steam on a warm oak table, soft morning window light, shallow depth of field. No people, no hands, no text, no labels, no logos.",
+  "aspect_ratio": "1:1",
+  "gcs_uri": "gs://<BUCKET>/campaign-images/clean_beans_still_life-3c10b922.png",
+  "size": [
+    1024,
+    1024
+  ],
+  "copy": "images/clean_beans_still_life.jpg",
+  "copy_kb": 246,
+  "generated_at": "2026-11-26T00:32:32",
+  "commit": "3fbe828"
+}

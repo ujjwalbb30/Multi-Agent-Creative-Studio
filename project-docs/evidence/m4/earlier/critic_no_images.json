@@ -1,0 +1,61 @@
+{
+  "title": "M2 captions, no images",
+  "message": "Review this Instagram campaign.\n\nCampaign: Ember & Oak, a small-batch coffee roastery in Austin, Texas, growing its Instagram following among local remote workers.\n\nCAPTIONS:\n**Caption 1: The Productivity Pivot**\nYour home office is killing your focus. With 85% of Austin\u2019s job market shifting back to the cubicle, the \"flexibility gap\" is real for the remote 15% who need more than a desk\u2014they need a destination.\n\nHere\u2019s what most people get wrong:\nProductivity isn\u2019t about silence; it\u2019s about the right sensory environment. Home is too familiar, and the local chain is too loud.\n\nThe fix:\nOur Austin roastery is designed as a \"Premium Alternative Office.\" High-speed reliability meets high-end craft, featuring our new functional \"Proffees\" infused with adaptogens to keep your cognitive load light and your output heavy.\n\nEscape the home-office slump and upgrade your 9-to-5 ritual.\n\n.\n#austinremotework #workfromcoffee #atxcoffee #emberandoak #productivitytips #atxsmallbusiness #thirdspace\nCTA: Save this for the morning you need a deep-work reset.\n\n**Caption 2: The \"Swavory\" Ritual**\nTo the Austin professionals still holding onto the remote dream: your \"third space\" just got a major upgrade. We know you're not just looking for caffeine; you're looking for an experience worth sharing.\n\nWe\u2019ve curated a workspace that matches your aesthetic\u2014think organic oak textures, 3D latte art, and the viral flavor of the season: our Miso-Caramel \"Swavory\" Latte. It\u2019s the perfect companion for your planner and your productivity. \n\nWe believe work should feel as premium as the coffee in your cup. Whether you're here for the protein-boosted cold brew or the high-speed fiber, you're among your tribe.\n\nWhat\u2019s the one thing that makes your remote workday feel \"bougie\"? \n\n.\n#exploreaustin #austinfoodie #remoteworklife #atxliving #specialtycoffee #misocaramel #aestheticwork\nCTA: Tell us your go-to \"work-from-roastery\" ritual in the comments.\n\n**Caption 3: The Story of the Batch**\nWe knew the producer\u2019s name before we ever smelled the beans. At Ember & Oak, transparency isn't a buzzword; it's our \"Oak\" foundation\u2014an organic, craft-first approach to small-batch roasting that the industrial labs can't replicate.\n\nWhile others focus on the machine, we focus on the farmer. Every cup served in our Austin roastery comes with a digital footprint: the specific harvest date, the producer\u2019s story, and our compostable path from farm to cup.\n\nWe spent months sourcing this specific batch from the Huila region to ensure your morning ritual supports more than just your inbox\u2014it supports a sustainable future.\n\nThe connoisseur status you\u2019ve been looking for is waiting in the next pour.\n\n.\n#farmtocup #sustainablecoffee #atxroaster #smallbatchcoffee #coffeetransparency #austintx #craftcoffee\nCTA: Follow for more behind-the-scenes stories of our latest small batches.\n",
+  "final_text": "**POSTS REVIEW:**\n- Score: 9/10\n- Status: APPROVED\n- What Works: The copy effectively targets the Austin remote-work niche with high-intent hooks and local relevance. The \"Productivity Pivot\" addresses a specific pain point (focus) with a unique solution (\"Proffees\"), while \"The 'Swavory' Ritual\" leans perfectly into Instagram\u2019s aesthetic/lifestyle culture. The third caption provides the necessary \"craft\" credibility to justify a premium price point. CTAs are varied and platform-appropriate (Save, Comment, Follow).\n- Issues: The term \"Proffees\" in Caption 1 is a bit polarizing and could lean into \"cringe\" territory for a high-end brand, but it serves as a distinct product identifier.\n- Suggestions: Ensure the \"digital footprint\" mentioned in Caption 3 is actually accessible (e.g., via a QR code or Linkin.bio) to fulfill the promise of transparency.\n\n**VISUALS REVIEW:**\n- Score: N/A\n- Status: NOT_REVIEWED\n- What Works: No images provided for review.\n- Issues: None\n- Suggestions: None\n\n**OVERALL ASSESSMENT:**\n- All Approved: YES\n- Priority Revisions: None\n- Overall Score: 9/10",
+  "tool_calls": [],
+  "tool_responses": [],
+  "guard": {
+    "parsed": true,
+    "corrections": []
+  },
+  "checks": [
+    {
+      "check": "final response is not empty",
+      "ok": true,
+      "detail": "1091 chars"
+    },
+    {
+      "check": "verdict parses in the exact POSTS / VISUALS / OVERALL format",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "guard parsed the model's verdict",
+      "ok": true,
+      "detail": "{\"parsed\": true, \"corrections\": []}"
+    },
+    {
+      "check": "model's derived fields needed no correction (informational)",
+      "ok": true,
+      "detail": "0 corrections"
+    },
+    {
+      "check": "review_image called exactly once per image",
+      "ok": true,
+      "detail": "0 calls for 0 images"
+    },
+    {
+      "check": "every review succeeded",
+      "ok": true,
+      "detail": "errors: []"
+    },
+    {
+      "check": "final verdict is consistent with the review results and the rules",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "no images -> VISUALS N/A + NOT_REVIEWED, no review calls",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "NOT_REVIEWED treated as approved",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "ran_at": "2026-11-21T19:00:04",
+  "model": "gemini-3-flash-preview",
+  "commit": "5cd9d9f"
+}
