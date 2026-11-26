@@ -50,6 +50,7 @@ PHASES = ["Strategy", "Creation", "Review", "Launch"]
 CASES = {
     "pm_no_notion": "No Notion configured: text timeline only",
     "pm_notion": "Notion configured: project and tasks synced",
+    "pm_notion_2": "Repeat of pm_notion",
     "pm_notion_forced_error": "Forced Notion error (missing Tasks database): hint, no crash",
 }
 UUID_RE = re.compile(r"\b[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}\b")
@@ -135,8 +136,9 @@ async def child(case: str, result_path: pathlib.Path) -> None:
                 await tool.close()
     final = await sessions.get_session(app_name="verify_m5", user_id="verifier", session_id=session.id)
     notion_available = final.state.get("pm_notion_available")
+    repairs = [mask(r) for k, v in final.state.items() if k.startswith("pm_notion_repair:") and v for r in v]
     result = {"final_text": mask("\n".join(texts).strip()), "tool_calls": calls, "tool_responses": responses,
-              "notion_available": notion_available, "tools_attached": bool(agent.tools)}
+              "notion_available": notion_available, "tools_attached": bool(agent.tools), "repairs": repairs}
     result_path.write_text(json.dumps(result, indent=2))
     print(f"CHILD_DONE {case}: {len(calls)} tool calls")
 
@@ -240,7 +242,7 @@ def case_checks(case: str, r: dict, back: dict | None, leaks: list[str], exit_co
         out.append({"check": "no tools attached, no tool calls", "ok": not r.get("tools_attached") and not names})
         out.append({"check": "Notion Status says not configured", "ok": "not configured" in status.lower(),
                     "detail": status[:120]})
-    elif case == "pm_notion":
+    elif case in ("pm_notion", "pm_notion_2"):
         out.append({"check": "run-start check found the Notion tools", "ok": r.get("notion_available") is True})
         out.append({"check": "schema discovered before writing (API-retrieve-a-database first)",
                     "ok": "API-retrieve-a-database" in names and "API-post-page" in names
@@ -251,7 +253,11 @@ def case_checks(case: str, r: dict, back: dict | None, leaks: list[str], exit_co
         out.append({"check": "Notion read-back: tasks created and linked to the project",
                     "ok": back and len(back["tasks"]) >= 6 and back["tasks_linked_to_new_project"] == len(back["tasks"]),
                     "detail": f"{len(back['tasks']) if back else 0} tasks, {back['tasks_linked_to_new_project'] if back else 0} linked"})
-        out.append({"check": "Notion Status reports what was created", "ok": "creat" in status.lower(),
+        titles = [p["title"] for p in back["projects"]] if back else []
+        out.append({"check": "Notion Status reports the actual creation (read-back finds the project; "
+                             "never 'not configured')",
+                    "ok": bool(titles) and "not configured" not in status.lower()
+                    and (any(t and t.lower() in status.lower() for t in titles) or "created" in status.lower()),
                     "detail": status[:160]})
     else:
         hints = [x["response"] for x in r.get("tool_responses", []) if "Notion 404 (object_not_found)" in x["response"]]
@@ -260,8 +266,9 @@ def case_checks(case: str, r: dict, back: dict | None, leaks: list[str], exit_co
                     "detail": f"{len(hints)} rewritten 404s"})
         out.append({"check": "no tasks written to the real Tasks database", "ok": back is not None and not back["tasks"],
                     "detail": f"{len(back['tasks']) if back else '-'} tasks"})
-        out.append({"check": "Notion Status reports the failure",
-                    "ok": any(w in status.lower() for w in ("fail", "error", "could not", "unable", "not found")),
+        out.append({"check": "Notion Status reports the failure (never 'not configured')",
+                    "ok": "not configured" not in status.lower()
+                    and any(w in status.lower() for w in ("fail", "error", "could not", "unable", "not found")),
                     "detail": status[:160]})
     return out
 
@@ -288,6 +295,8 @@ def write_case(out_dir: pathlib.Path, case: str, data: dict) -> None:
                   f"- Projects: {[p['title'] + ' ' + p['id'] for p in b['projects']]}",
                   f"- Tasks ({len(b['tasks'])}, {b['tasks_linked_to_new_project']} linked to the new project):"]
         lines += [f"  - {t['title']} {t['id']}" for t in b["tasks"]]
+    lines += ["", f"## Argument repairs ({len(data.get('repairs') or [])})", ""]
+    lines += [f"- {r}" for r in data.get("repairs") or []] or ["- none"]
     if data.get("tool_calls"):
         lines += ["", "## Tool calls (arguments masked and truncated)", ""]
         lines += [f"- `{c['name']}` {c['args'][:200]}" for c in data["tool_calls"]]
@@ -302,11 +311,12 @@ def write_case(out_dir: pathlib.Path, case: str, data: dict) -> None:
 def write_summary(out_dir: pathlib.Path, log: list) -> None:
     lines = ["# Milestone 5 verification summary", "",
              "Generated by `workshop/starter/scripts/verify_m5.py`. Every ID is masked to its last 4 characters.", "",
-             "| Case | Checks passed | Tool calls | Notion read-back | Leak check | Commit |", "|---|---|---|---|---|---|"]
+             "| Case | Checks passed | Tool calls | Repairs | Notion read-back | Leak check | Commit |",
+             "|---|---|---|---|---|---|---|"]
     for case, title in CASES.items():
         p = out_dir / f"{case}.json"
         if not p.exists():
-            lines.append(f"| [{case}]({case}.md) | not run | | | | |")
+            lines.append(f"| [{case}]({case}.md) | not run | | | | | |")
             continue
         d = json.loads(p.read_text())
         ok = sum(c["ok"] for c in d["checks"])
@@ -314,7 +324,7 @@ def write_summary(out_dir: pathlib.Path, log: list) -> None:
         back = f"{len(b['projects'])} project, {len(b['tasks'])} tasks" if b else "-"
         leak = "clean" if not d.get("leaks") else "LEAK"
         lines.append(f"| [{case}]({case}.md): {title} | {ok}/{len(d['checks'])} | {len(d.get('tool_calls', []))} | "
-                     f"{back} | {leak} | `{d['commit']}` |")
+                     f"{len(d.get('repairs') or [])} | {back} | {leak} | `{d['commit']}` |")
     used = sum(1 for e in log if e.get("counted", True))
     lines += ["", f"PM runs used: {used} of 8. Full history: [run_log.json](run_log.json).", ""]
     notes = out_dir / "NOTES.md"
