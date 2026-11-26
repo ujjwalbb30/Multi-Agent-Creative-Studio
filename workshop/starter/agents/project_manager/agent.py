@@ -147,15 +147,20 @@ def schema_names(tool_context: ToolContext, database_id=None) -> list[str]:
 
 
 def make_notion_arg_repair(database_ids: tuple[str, ...]):
-    """Builds the before_tool_callback that repairs two known model mistakes.
+    """Builds the before_tool_callback that repairs two known model mistakes and
+    keeps page creation inside the configured databases.
 
     1. parent.page_id equal to a configured database ID -> parent.database_id
        (a database can never be a page parent).
-    2. A key under "properties" that is not in the recorded schema but matches a
+    2. Page creation (API-post-page) is allowed only when parent.database_id is one
+       of the configured IDs. Anything else is blocked with a masked hint that
+       counts toward the error cap. (In M5 the model found the real Tasks database
+       through the Projects relation when the configured ID was wrong.)
+    3. A key under "properties" that is not in the recorded schema but matches a
        schema name after stripping quotes, backslashes and whitespace from its ends
        is renamed to that exact name.
     Nothing else is changed: no other names are guessed and no values are touched.
-    Each repair is logged (masked) and recorded in state.
+    Each repair or block is logged (masked) and recorded in state.
     """
     configured = {_norm_id(d) for d in database_ids if d}
 
@@ -167,6 +172,18 @@ def make_notion_arg_repair(database_ids: tuple[str, ...]):
         if isinstance(parent, dict) and "page_id" in parent and _norm_id(parent["page_id"]) in configured:
             parent["database_id"] = parent.pop("page_id")
             repairs.append(f"parent page_id -> database_id ({mask_id(str(parent['database_id']))})")
+
+        if tool.name == "API-post-page":
+            target = parent.get("database_id") if isinstance(parent, dict) else None
+            if _norm_id(target) not in configured:
+                _record_repairs(tool, tool_context, repairs)
+                where = f"database {mask_id(str(target))}" if target else "a parent that is not a database"
+                return _error_response(
+                    tool, tool_context, 0, "not_a_configured_database",
+                    f"blocked page creation in {where}: not a configured database",
+                    "Pages may only be created in the configured Projects and Tasks databases. Do not "
+                    "look up or use any other database ID. If a configured database could not be "
+                    "found, stop writing to it and report that in the Notion Status as a failure.")
 
         props = args.get("properties")
         if isinstance(props, dict) and props:
@@ -186,13 +203,17 @@ def make_notion_arg_repair(database_ids: tuple[str, ...]):
             if renamed != props or list(renamed) != list(props):
                 args["properties"] = renamed
 
-        if repairs:
-            logger.warning("Repaired %s arguments: %s", tool.name, mask_text("; ".join(repairs)))
-            key = f"{NOTION_REPAIR_KEY_PREFIX}{tool_context.invocation_id}:{tool_context.function_call_id}"
-            tool_context.state[key] = repairs
+        _record_repairs(tool, tool_context, repairs)
         return None
 
     return repair_notion_args
+
+
+def _record_repairs(tool: BaseTool, tool_context: ToolContext, repairs: list[str]) -> None:
+    if repairs:
+        logger.warning("Repaired %s arguments: %s", tool.name, mask_text("; ".join(repairs)))
+        key = f"{NOTION_REPAIR_KEY_PREFIX}{tool_context.invocation_id}:{tool_context.function_call_id}"
+        tool_context.state[key] = repairs
 
 
 def notion_hint(status: int, code: str, message: str, valid_names: Optional[list[str]] = None) -> str:
@@ -285,7 +306,12 @@ def _error_response(tool: BaseTool, tool_context: ToolContext, status: int, code
     if errors >= MAX_NOTION_ERRORS:
         hint = (f"This run has hit {errors} Notion errors. Stop using Notion tools now, finish the text "
                 "timeline, and report what was and was not created in the Notion Status.")
-    label = f"Notion {status} ({code})" if status else f"Notion call failed ({code})"
+    if status:
+        label = f"Notion {status} ({code})"
+    elif code == "not_a_configured_database":
+        label = "Blocked (not a configured database)"
+    else:
+        label = f"Notion call failed ({code})"
     return {
         "content": [{
             "type": "text",

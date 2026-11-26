@@ -233,9 +233,44 @@ def test_argument_repair() -> None:
 
     other_page = "abcdefab-cdef-abcd-efab-cdefabcdefab"
     args2 = {"parent": {"page_id": other_page}, "properties": {"Status": {"status": {"name": "Done"}}}}
-    repair(TOOL, args2, FakeToolContext(state, "p2"))
-    expect("parent page_id that is not a configured database is left alone",
-           args2["parent"] == {"page_id": other_page})
+    out2 = repair(TOOL, args2, FakeToolContext(state, "p2"))
+    expect("parent page_id that is not a configured database is not repaired (and creation is blocked)",
+           args2["parent"] == {"page_id": other_page} and out2 is not None
+           and "not a configured database" in out2["content"][0]["text"])
+
+    # Allow-list for page creation.
+    ok_state = FakeState()
+    allowed = repair(TOOL, {"parent": {"database_id": FAKE_TASKS_DB}, "properties": {}},
+                     FakeToolContext(ok_state, "a1"))
+    expect("page creation in a configured database is allowed", allowed is None)
+    unconfigured = "99999999-8888-7777-6666-555555554444"
+    block_records = []
+    handler = logging.Handler()
+    handler.emit = lambda r: block_records.append(r.getMessage())
+    pm.logger.addHandler(handler)
+    try:
+        blocked = repair(TOOL, {"parent": {"database_id": unconfigured}, "properties": {}},
+                         FakeToolContext(ok_state, "a2"))
+    finally:
+        pm.logger.removeHandler(handler)
+    btext = blocked["content"][0]["text"] if blocked else ""
+    expect("page creation in an unconfigured database is blocked with a masked hint",
+           "Blocked (not a configured database)" in btext and "…4444" in btext and unconfigured not in btext, btext[:160])
+    expect("block is logged masked and counts toward the error cap",
+           block_records and unconfigured not in "".join(block_records)
+           and any(k.startswith(pm.NOTION_ERROR_KEY_PREFIX) for k in ok_state), block_records)
+    args5 = {"parent": {"page_id": FAKE_TASKS_DB}, "properties": {}}
+    out5 = repair(TOOL, args5, FakeToolContext(ok_state, "a3"))
+    expect("page_id parent is repaired first, then allowed", out5 is None
+           and args5["parent"] == {"database_id": FAKE_TASKS_DB})
+    patch = type("T", (), {"name": "API-patch-page"})()
+    expect("rule limited to page creation (API-patch-page is not blocked)",
+           repair(patch, {"properties": {}}, FakeToolContext(ok_state, "a4")) is None)
+    cap_state = FakeState()
+    for i in range(3):
+        last = repair(TOOL, {"parent": {"database_id": unconfigured}, "properties": {}},
+                      FakeToolContext(cap_state, f"b{i}"))
+    expect("third blocked write hits the error cap", "Stop using Notion tools now" in last["content"][0]["text"])
     args3 = {"parent": {"database_id": FAKE_PROJECTS_DB},
              "properties": {'"Status"': {"status": {"name": "A"}}, "Status": {"status": {"name": "B"}}}}
     repair(TOOL, args3, FakeToolContext(state, "p3"))
