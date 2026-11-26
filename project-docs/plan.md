@@ -101,6 +101,9 @@ Files: Dockerfile per specialist, `deploy/*.py`, `deploy/teardown_gcp.sh`, `.env
   2>/dev/null'` to prevent that. Confirm in Cloud Logging that no token, "Bearer" header or full
   database ID appears (search the PM service logs for the token prefix and the last 4 characters
   of each database ID, never the full values).
+- [ ] M6 reliability (from M5): the PM's Notion error cap is a hint the model may ignore (8 blocked
+  writes in the M5 forced-error run). Consider hard-blocking every Notion tool call in the
+  before_tool_callback once the cap is reached in a run.
 - [ ] M6 teardown: `deploy/teardown_gcp.sh` builds the images bucket name from the project ID
   (`<project>-campaign-images`) instead of reading `GCS_IMAGES_BUCKET`.
 
