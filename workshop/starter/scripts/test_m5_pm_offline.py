@@ -185,6 +185,75 @@ def test_error_hints() -> None:
     expect("errors from another run do not count toward the cap", "Stop using Notion tools now" not in t)
 
 
+def schema_response(db_id, names):
+    return {"content": [{"type": "text", "text": json.dumps(
+        {"object": "database", "id": db_id, "properties": {n: {"type": "x"} for n in names}})}], "isError": False}
+
+
+def test_argument_repair() -> None:
+    import copy
+
+    state = FakeState()
+    retrieve = type("T", (), {"name": "API-retrieve-a-database"})()
+    pm.record_notion_schema(retrieve, {"database_id": FAKE_PROJECTS_DB}, FakeToolContext(state, "s1"),
+                            schema_response(FAKE_PROJECTS_DB, ["Project name", "Status", "Summary"]))
+    pm.record_notion_schema(retrieve, {"database_id": FAKE_TASKS_DB}, FakeToolContext(state, "s2"),
+                            schema_response(FAKE_TASKS_DB, ["Task name", "Due"]))
+    recorded = [v for k, v in state.items() if k.startswith(pm.NOTION_SCHEMA_KEY_PREFIX)]
+    expect("schema names recorded per database (only the last 8 ID characters kept)",
+           len(recorded) == 2 and all(len(r["db"]) == 8 for r in recorded)
+           and FAKE_PROJECTS_DB not in json.dumps(recorded), recorded)
+
+    repair = pm.make_notion_arg_repair((FAKE_PROJECTS_DB, FAKE_TASKS_DB))
+    title_value = {"title": [{"text": {"content": "Ember & Oak launch"}}]}
+    values = {'"Project name"': title_value, "Status": {"status": {"name": "Planning"}},
+              '\\"Weird\\"': {"rich_text": []}, "Nonexistent": {"select": {"name": "X"}}}
+    args = {"parent": {"page_id": FAKE_PROJECTS_DB}, "properties": copy.deepcopy(values)}
+    records = []
+    handler = logging.Handler()
+    handler.emit = lambda r: records.append(r.getMessage())
+    pm.logger.addHandler(handler)
+    try:
+        repair(TOOL, args, FakeToolContext(state, "p1"))
+    finally:
+        pm.logger.removeHandler(handler)
+    props = args["properties"]
+    expect("parent page_id equal to a configured database ID -> database_id",
+           args["parent"] == {"database_id": FAKE_PROJECTS_DB}, args["parent"])
+    expect("quoted key renamed to the exact schema name",
+           "Project name" in props and '"Project name"' not in props, list(props))
+    expect("key that does not match even after stripping stays unchanged",
+           '\\"Weird\\"' in props and "Nonexistent" in props and "Weird" not in props, list(props))
+    expect("values are untouched (deep-equal, same order)",
+           list(props.values()) == list(values.values()), "")
+    recs = [v for k, v in state.items() if k.startswith(pm.NOTION_REPAIR_KEY_PREFIX)]
+    expect("each repair recorded in state", recs == [[f"parent page_id -> database_id (…{FAKE_PROJECTS_DB[-4:]})",
+                                                      "property '\"Project name\"' -> 'Project name'"]], recs)
+    expect("repair log line is masked", records and FAKE_PROJECTS_DB not in "".join(records), records)
+
+    other_page = "abcdefab-cdef-abcd-efab-cdefabcdefab"
+    args2 = {"parent": {"page_id": other_page}, "properties": {"Status": {"status": {"name": "Done"}}}}
+    repair(TOOL, args2, FakeToolContext(state, "p2"))
+    expect("parent page_id that is not a configured database is left alone",
+           args2["parent"] == {"page_id": other_page})
+    args3 = {"parent": {"database_id": FAKE_PROJECTS_DB},
+             "properties": {'"Status"': {"status": {"name": "A"}}, "Status": {"status": {"name": "B"}}}}
+    repair(TOOL, args3, FakeToolContext(state, "p3"))
+    expect("no rename when the stripped name is already a key",
+           list(args3["properties"]) == ['"Status"', "Status"], list(args3["properties"]))
+    query = type("T", (), {"name": "API-post-database-query"})()
+    args4 = {"parent": {"page_id": FAKE_PROJECTS_DB}}
+    repair(query, args4, FakeToolContext(state, "p4"))
+    expect("tools other than page create/update are not touched", args4 == {"parent": {"page_id": FAKE_PROJECTS_DB}})
+
+    out = pm.handle_notion_error(TOOL, {"parent": {"database_id": FAKE_PROJECTS_DB}}, FakeToolContext(state, "e9"),
+                                 notion_error(400, "validation_error", '"Project name" is not a property that exists.'))
+    text = out["content"][0]["text"]
+    expect("400 'not a property' hint lists the valid names for that database",
+           "Valid property names for this database are: Project name, Status, Summary" in text
+           and "Task name" not in text, text[-200:])
+
+
 def test_exception_hint() -> None:
     err = RuntimeError(f"connect ECONNREFUSED; {BEARER}{FAKE_TOKEN} db {FAKE_TASKS_DB}")
     out = pm.handle_notion_exception(TOOL, {}, FakeToolContext(FakeState(), "e1"), err)
@@ -239,8 +308,9 @@ def test_branches() -> None:
     params = agent.tools[0]._inner._connection_params.server_params
     expect("Notion branch: guarded MCP toolset + callbacks",
            isinstance(agent.tools[0], pm.GuardedNotionToolset)
-           and agent.after_tool_callback is pm.handle_notion_error
-           and agent.on_tool_error_callback is pm.handle_notion_exception and agent.before_agent_callback is not None)
+           and agent.after_tool_callback == [pm.record_notion_schema, pm.handle_notion_error]
+           and agent.on_tool_error_callback is pm.handle_notion_exception
+           and agent.before_agent_callback is not None and agent.before_tool_callback is not None)
     expect("server started through the stderr-discarding wrapper",
            params.command == "sh" and params.args == ["-c", "exec notion-mcp-server 2>/dev/null"]
            and set(params.env) == {"NOTION_TOKEN", "PATH"})
@@ -284,6 +354,8 @@ def test_check_secrets() -> None:
 async def main() -> int:
     print("== error hints and cap")
     test_error_hints()
+    print("== argument repair")
+    test_argument_repair()
     print("== raised errors")
     test_exception_hint()
     print("== masked logging")

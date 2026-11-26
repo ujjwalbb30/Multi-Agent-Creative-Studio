@@ -35,6 +35,10 @@ if not GEMINI_MODEL:
 # Notion and report it; the text timeline is still produced.
 MAX_NOTION_ERRORS = 3
 NOTION_ERROR_KEY_PREFIX = "pm_notion_error:"
+NOTION_SCHEMA_KEY_PREFIX = "pm_notion_schema:"
+NOTION_REPAIR_KEY_PREFIX = "pm_notion_repair:"
+PAGE_WRITE_TOOLS = ("API-post-page", "API-patch-page")
+_NAME_STRIP = " \t\r\n\"'\\"
 NOTION_AVAILABLE_KEY = "pm_notion_available"
 NOTION_PROBE_TIMEOUT = 30.0
 
@@ -103,7 +107,95 @@ def _response_text(tool_response) -> str:
     return (first.get("text") if isinstance(first, dict) else getattr(first, "text", "")) or ""
 
 
-def notion_hint(status: int, code: str, message: str) -> str:
+def _norm_id(value) -> str:
+    return str(value or "").replace("-", "").lower()
+
+
+def _run_values(tool_context: ToolContext, prefix: str) -> list:
+    """Values stored under one state key per call for the current run (invocation)."""
+    run_prefix = f"{prefix}{tool_context.invocation_id}:"
+    return [v for k, v in tool_context.state.to_dict().items() if k.startswith(run_prefix) and v]
+
+
+def record_notion_schema(
+    tool: BaseTool, args: dict, tool_context: ToolContext, tool_response: dict
+) -> dict | None:
+    """Remembers each database's property names from API-retrieve-a-database."""
+    if tool.name != "API-retrieve-a-database":
+        return None
+    try:
+        data = json.loads(_response_text(tool_response))
+    except Exception:
+        return None
+    if not isinstance(data, dict) or data.get("object") != "database":
+        return None
+    names = sorted((data.get("properties") or {}).keys())
+    # Only the last 8 characters of the ID are kept in state.
+    key = f"{NOTION_SCHEMA_KEY_PREFIX}{tool_context.invocation_id}:{tool_context.function_call_id}"
+    tool_context.state[key] = {"db": _norm_id(data.get("id") or args.get("database_id"))[-8:], "names": names}
+    return None
+
+
+def schema_names(tool_context: ToolContext, database_id=None) -> list[str]:
+    """Property names recorded this run, for one database if known, else for all."""
+    schemas = _run_values(tool_context, NOTION_SCHEMA_KEY_PREFIX)
+    if database_id:
+        match = [s["names"] for s in schemas if s["db"] == _norm_id(database_id)[-8:]]
+        if match:
+            return match[-1]
+    return sorted({n for s in schemas for n in s["names"]})
+
+
+def make_notion_arg_repair(database_ids: tuple[str, ...]):
+    """Builds the before_tool_callback that repairs two known model mistakes.
+
+    1. parent.page_id equal to a configured database ID -> parent.database_id
+       (a database can never be a page parent).
+    2. A key under "properties" that is not in the recorded schema but matches a
+       schema name after stripping quotes, backslashes and whitespace from its ends
+       is renamed to that exact name.
+    Nothing else is changed: no other names are guessed and no values are touched.
+    Each repair is logged (masked) and recorded in state.
+    """
+    configured = {_norm_id(d) for d in database_ids if d}
+
+    def repair_notion_args(tool: BaseTool, args: dict, tool_context: ToolContext) -> dict | None:
+        if tool.name not in PAGE_WRITE_TOOLS or not isinstance(args, dict):
+            return None
+        repairs = []
+        parent = args.get("parent")
+        if isinstance(parent, dict) and "page_id" in parent and _norm_id(parent["page_id"]) in configured:
+            parent["database_id"] = parent.pop("page_id")
+            repairs.append(f"parent page_id -> database_id ({mask_id(str(parent['database_id']))})")
+
+        props = args.get("properties")
+        if isinstance(props, dict) and props:
+            db = parent.get("database_id") if isinstance(parent, dict) else None
+            names = set(schema_names(tool_context, db))
+            renamed = {}
+            for key in list(props):
+                if key in names:
+                    renamed[key] = props[key]
+                    continue
+                stripped = key.strip(_NAME_STRIP)
+                if stripped != key and stripped in names and stripped not in props:
+                    renamed[stripped] = props[key]
+                    repairs.append(f"property {key!r} -> {stripped!r}")
+                else:
+                    renamed[key] = props[key]
+            if renamed != props or list(renamed) != list(props):
+                args["properties"] = renamed
+
+        if repairs:
+            logger.warning("Repaired %s arguments: %s", tool.name, mask_text("; ".join(repairs)))
+            key = f"{NOTION_REPAIR_KEY_PREFIX}{tool_context.invocation_id}:{tool_context.function_call_id}"
+            tool_context.state[key] = repairs
+        return None
+
+    return repair_notion_args
+
+
+def notion_hint(status: int, code: str, message: str, valid_names: Optional[list[str]] = None) -> str:
     """Actionable recovery hint for a Notion API error."""
     if status == 401:
         return ("The Notion token is invalid or revoked. Stop using Notion tools for this run and "
@@ -121,6 +213,10 @@ def notion_hint(status: int, code: str, message: str) -> str:
         if "relation" in lowered:
             return ('Set a relation only as {"relation": [{"id": "<page-id>"}]}. If it still fails, '
                     "retry without the relation property.")
+        if "is not a property that exists" in lowered and valid_names:
+            return ("That property name does not exist. Valid property names for this database are: "
+                    + ", ".join(valid_names) + ". Use them exactly as written, without extra quotes "
+                    "or escaping. Retry with corrected parameters.")
         return ("Use only property names and types that exist in the schema you retrieved "
                 "(status properties take {\"status\": {\"name\": ...}}, selects take "
                 "{\"select\": {\"name\": ...}} with an existing option). Retry with corrected parameters.")
@@ -154,7 +250,11 @@ def handle_notion_error(
     status = int(data.get("status") or 0)
     code = str(data.get("code", ""))
     message = str(data.get("message", ""))
-    return _error_response(tool, tool_context, status, code, message, notion_hint(status, code, message))
+    parent = args.get("parent") if isinstance(args, dict) else None
+    db = parent.get("database_id") if isinstance(parent, dict) else None
+    valid = schema_names(tool_context, db) if status == 400 else None
+    return _error_response(tool, tool_context, status, code, message,
+                           notion_hint(status, code, message, valid))
 
 
 def handle_notion_exception(
@@ -225,10 +325,18 @@ Property rules:
 - Only set properties whose type you can identify from the schema response; if a property type
   is unclear after reading the schema, skip it and note it in the Notion Status
 - Since owners cannot be set as people, put the owner in the task title, e.g. "[Copywriter] ..."
+- Write property names exactly as they appear in the schema, as plain JSON keys: no extra
+  quote marks and no backslashes inside the key. For example, if the schema has a title
+  property called Name and a status property called Status, create a page with:
+  {{"parent": {{"database_id": "<the database id>"}},
+    "properties": {{"Name": {{"title": [{{"text": {{"content": "Launch plan"}}}}]}},
+                    "Status": {{"status": {{"name": "Planning"}}}}}}}}
 
 If any Notion call fails, continue — the text timeline is always the primary deliverable.
 Write your complete response AFTER all Notion operations are done (or have failed).
 In the Notion Status, say what was created (project name and number of tasks) and what failed.
+Notion IS configured for this run: never write "Notion not configured" in the Notion Status. If
+Notion operations failed, say "Notion sync failed" and what failed.
 Never include database IDs, page IDs or URLs in your response.
 
 If image HTTPS links are provided in the input (under "Generated Images" from the Creative
@@ -320,7 +428,8 @@ def create_project_manager_agent():
         model=GEMINI_MODEL,
         generate_content_config=GENERATE_CONTENT_CONFIG,
         before_agent_callback=check_notion_available,
-        after_tool_callback=handle_notion_error,
+        before_tool_callback=make_notion_arg_repair((notion_project_db_id, notion_tasks_db_id)),
+        after_tool_callback=[record_notion_schema, handle_notion_error],
         on_tool_error_callback=handle_notion_exception,
         instruction=instruction,
         description=description,
