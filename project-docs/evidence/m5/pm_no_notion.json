@@ -1,0 +1,78 @@
+{
+  "final_text": "**Project Timeline:**\n- Strategy: 2026-11-26 to 2026-11-27 - Alignment on target Austin remote worker personas and campaign scheduling.\n- Creation: 2026-11-28 to 2026-12-02 - Finalizing visual exports and adjusting caption formatting per critic feedback.\n- Review: 2026-12-03 to 2026-12-04 - Quality assurance, link checking for \"Proffees\" info, and final approval for launch.\n- Launch: 2026-12-05 to 2026-12-12 - Deployment of posts and active community management.\n\n**Task List:**\n| Task | Owner | Deadline | Status |\n|---|---|---|---|\n| Campaign kickoff and resource allocation | Project Manager | 2026-11-26 | Done |\n| Define Austin geo-fencing for ad spend | Brand Strategist | 2026-11-27 | Not Started |\n| Apply line breaks and readability tweaks to Captions 1, 2, and 3 | Copywriter | 2026-11-28 | Not Started |\n| Export `clean_beans_still_life` for Feed and Story formats | Designer | 2026-11-29 | Not Started |\n| Source/Create b-roll for Caption 2 and 3 visual variations | Designer | 2026-12-01 | Not Started |\n| Final review of all assets against brand guidelines | Critic | 2026-12-03 | Not Started |\n| Schedule all posts in Meta Business Suite | Project Manager | 2026-12-04 | Not Started |\n| Publish: The Productivity Pivot (Visual: `clean_beans_still_life`) | Project Manager | 2026-12-05 | Not Started |\n| Publish: The \"Swavory\" Ritual (Visual: `clean_beans_still_life` variant) | Project Manager | 2026-12-08 | Not Started |\n| Publish: The Story of the Batch (Visual: `clean_beans_still_life` variant) | Project Manager | 2026-12-12 | Not Started |\n| Respond to comments and Austin local tags | Community Manager | 2026-12-13 | Not Started |\n\n**Budget Breakdown:**\n- Content Refinement: $350.00 - Final designer hours for formatting `clean_beans_still_life` and minor copy edits.\n- Localized Ad Spend: $600.00 - Meta ads targeted at Austin-based remote workers and coffee enthusiasts.\n- Community Management: $250.00 - Dedicated time for engagement and 48-hour response windows for the launch week.\n- Project Management: $300.00 - Oversight, scheduling, and reporting.\n- Total: $1,500.00\n\n**Milestones:**\n- 2026-11-26: Campaign Setup Finalized\n- 2026-12-03: All Creative Assets Approved for Launch\n- 2026-12-05: First Post Live (The Productivity Pivot)\n- 2026-12-15: Campaign Performance Report Distributed\n\n**Notion Status:**\nNotion not configured - text timeline only",
+  "tool_calls": [],
+  "tool_responses": [],
+  "notion_available": null,
+  "tools_attached": false,
+  "read_back": null,
+  "leaks": [],
+  "exit_code": 0,
+  "error_tail": "",
+  "since": "2026-11-26T07:13:00+00:00",
+  "checks": [
+    {
+      "check": "run finished without crashing",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "check": "captured stdout/stderr contains no token, bearer header or full database ID",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "final response is not empty",
+      "ok": true,
+      "detail": "2386 chars"
+    },
+    {
+      "check": "five sections present, in order",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "timeline has Strategy, Creation, Review, Launch in order",
+      "ok": true
+    },
+    {
+      "check": "dates start from today (none in the past, first within 7 days)",
+      "ok": true,
+      "detail": "23 dates, 2026-11-26 to 2026-12-15"
+    },
+    {
+      "check": "task table has Task | Owner | Deadline | Status and 6+ tasks",
+      "ok": true,
+      "detail": "11 tasks"
+    },
+    {
+      "check": "tasks name every approved caption",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "plan references the approved visual",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "check": "budget has a total",
+      "ok": true
+    },
+    {
+      "check": "response contains no full IDs or Notion URLs",
+      "ok": true
+    },
+    {
+      "check": "no tools attached, no tool calls",
+      "ok": true
+    },
+    {
+      "check": "Notion Status says not configured",
+      "ok": true,
+      "detail": "Notion not configured - text timeline only"
+    }
+  ],
+  "ran_at": "2026-11-26T02:14:12",
+  "model": "gemini-3-flash-preview",
+  "commit": "57cfeaa"
+}

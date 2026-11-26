@@ -31,3 +31,43 @@
 instead of returning an error response, which would have crashed the run. The agent now has an
 `on_tool_error_callback` that turns it into a masked recovery hint, so the text timeline is
 always produced.
+
+**Owners go into task titles.** The Notion template's owner fields (`Owner` on Projects,
+`Assignee` on Tasks) are *people* properties, which an integration token cannot set. The
+instruction tells the Project Manager to skip them and put the owner's role in the task title
+instead, e.g. "[Copywriter] Publish The Productivity Pivot". The text Task List keeps a proper
+Owner column.
+
+**Finding: quoted property keys, repaired on every write.** In the first Notion run (kept in
+[pre-fix/pm_notion.md](pre-fix/pm_notion.md)) nothing was created: the model wrote the title
+property as `"Project name"` with literal quote marks inside the key, and once used
+`parent.page_id` with a database ID. Checking the cause: the provided Notion instruction contains
+**no** quoted or escaped property names (its only quoted words are type names such as "people"
+and "relation", and JSON examples whose backslashes are Python escaping, so the model sees plain
+quotes). The more likely source is the MCP tool definition: `API-post-page`'s `properties`
+parameter only declares a fixed `title` key, so the model has no schema-sanctioned way to write a
+key like `Project name` and escapes it. Only keys containing a space were quoted. Commit
+`dcfa632` added a narrow `before_tool_callback` repair (a configured database ID passed as
+`page_id` becomes `database_id`; a key that matches a recorded schema name after stripping quotes,
+backslashes and whitespace is renamed; nothing else is guessed and no values change), a plain-key
+example in the instruction, and a 400 hint that lists the valid property names. **The repair fired
+on every Notion property write in both normal runs: 8 of 8 page writes in `pm_notion` and 8 of 8
+in `pm_notion_2` (16 of 16, all quoted keys).** The parent repair did not fire in these runs. The
+instruction example alone did not change the model's behaviour; the repair is what makes the sync
+work.
+
+**Finding: the model reached the real Tasks database through the relation; we block that.** In
+the first forced-error run (kept in
+[pre-fix/pm_notion_forced_error_via_relation.md](pre-fix/pm_notion_forced_error_via_relation.md)),
+the Tasks database ID was overridden with one that does not exist. The 404 was rewritten into the
+hint as designed, but the model then read the real Tasks database ID from the Projects database's
+`Tasks` relation and wrote all 8 tasks there, bypassing the configuration. Commit `1442ec3` allows
+page creation (`API-post-page`) only when `parent.database_id` is one of the two configured IDs;
+anything else is blocked with a masked "not a configured database" hint that counts toward the
+error cap. In the rerun the project was created, no tasks reached the real Tasks database, and the
+Notion Status reported the task sync failure.
+
+**Finding: the error cap is advice, not enforcement.** After three errors the hint tells the model
+to stop using Notion, but in the forced-error rerun it kept trying: 8 page-creation attempts were
+blocked in total. Every one was blocked, so nothing was written, but the extra calls cost model
+turns. Hard-blocking all Notion calls once the cap is reached is noted for M6.
