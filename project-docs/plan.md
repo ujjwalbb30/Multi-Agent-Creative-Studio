@@ -20,6 +20,13 @@ Files: `critic/agent.py`, `critic/image_review_tool.py`, `creative_director/agen
   regenerate images for it.
 - [ ] M6 (from M4): cap revision rounds (e.g. `MAX_REVISION_ROUNDS` from env, default 3). When
   the cap is hit, stop with the last verdict and say so; never advance an unapproved campaign.
+  The cap also matters because image review scores vary between runs: in M4 the same image
+  scored 6 and 8, so a borderline image can flip between pass and fail on an identical retry.
+- [ ] M6 (from M3/M4): Designer constraints for revisions. Every M3 image had a flaw the Critic
+  rejects. Tell the Designer (instruction or revision prompt): no real logos or brand names other
+  than the campaign's own, avoid visible text and hands where possible, and pass the Critic's
+  VISUALS Issues and Suggestions into the revision prompt verbatim. The M4 clean test image made
+  from such a prompt scored 9, 9 and 10.
 
 ### 1. Orchestration & Workflow (20%) — M6
 Files: `creative_director/agent.py`
