@@ -1,19 +1,23 @@
 """Milestone 4 verification: the Critic reviews real images and returns a strict verdict.
 
-Reuses the M2 captions and the M3 images already in the bucket (no image generation).
+Reuses the M2 captions and the M3 images already in the bucket. One extra image,
+`clean_image`, is generated once with the Designer's generate_image tool from a
+simpler prompt (no people, hands, text or logos) to test the APPROVED path,
+because every M3 image has a real flaw the Critic correctly rejects.
 
 Cases (one Critic run each):
-  critic_strong                  M2 captions + the cleanest M3 image        -> expect APPROVED
+  critic_strong                  M2 captions + the clean image              -> expect APPROVED
   critic_weak                    weak captions + off-brand image with logo  -> expect NEEDS_REVISION,
                                                                                logo flagged
   critic_mixed                   M2 captions + 3 images of mixed quality    -> VISUALS = lowest score
   critic_no_images               M2 captions only                           -> VISUALS NOT_REVIEWED
-  critic_weak_posts_good_visuals weak captions + the cleanest M3 image      -> POSTS NEEDS_REVISION
+  critic_weak_posts_good_visuals weak captions + the clean image            -> POSTS NEEDS_REVISION
   critic_strong_2, critic_weak_2 repeats, to show the format holds
 
 Evidence goes to project-docs/evidence/m4/ with the bucket, project ID, project
-number and emails redacted. Budget: --budget Critic runs (default 10); runs
-rejected with HTTP 403 are logged but not counted.
+number and emails redacted. Budget: --budget Critic runs (default 13); runs
+rejected with HTTP 403 are logged but not counted. The clean image is logged as an
+image, not a Critic run, and is refused if M3 + M4 images would exceed --image-cap.
 
 Usage (from workshop/starter/):
   uv run python scripts/verify_m4.py
@@ -75,6 +79,56 @@ BRIEF = ("Campaign: Ember & Oak, a small-batch coffee roastery in Austin, Texas,
          "following among local remote workers.")
 
 
+CLEAN_PROMPT = (
+    "Photorealistic overhead still life: a small ceramic bowl of freshly roasted coffee beans and a "
+    "matte stone cup of black coffee with a little steam on a warm oak table, soft morning window "
+    "light, shallow depth of field. No people, no hands, no text, no labels, no logos."
+)
+CLEAN_CONCEPT = "clean_beans_still_life"
+
+
+def is_critic_run(entry: dict) -> bool:
+    return entry.get("kind", "critic") == "critic" and entry.get("counted", True)
+
+
+def images_generated(log: list) -> int:
+    m3_log = M3_EVIDENCE / "run_log.json"
+    m3 = sum(1 for e in json.loads(m3_log.read_text()) if e.get("counted", True)) if m3_log.exists() else 0
+    return m3 + sum(1 for e in log if e.get("kind") == "image" and e.get("counted", True))
+
+
+async def ensure_clean_image(out_dir: pathlib.Path, log: list, log_path: pathlib.Path, image_cap: int) -> str:
+    """Generates the clean test image once (cached in clean_image.json) and returns its URI."""
+    path = out_dir / "clean_image.json"
+    if path.exists():
+        return json.loads(path.read_text())["gcs_uri"].replace("<BUCKET>", BUCKET)
+    if images_generated(log) + 1 > image_cap:
+        raise SystemExit(f"[stop] image cap {image_cap} reached (M3 + M4); not generating the clean image")
+    from designer import image_gen_tool
+    from verify_m3 import NullToolContext, compress_copy, image_size
+
+    log.append({"case": "clean_image", "kind": "image", "at": datetime.datetime.now().isoformat(timespec="seconds")})
+    log_path.write_text(json.dumps(log, indent=2))
+    print("[run ] clean_image (1 image) ...", flush=True)
+    result = await image_gen_tool.generate_image(CLEAN_CONCEPT, CLEAN_PROMPT, "1:1", NullToolContext())
+    if result.get("status") != "success":
+        log[-1]["error"] = redact(str(result.get("error")))[:300]
+        log_path.write_text(json.dumps(log, indent=2))
+        raise SystemExit(f"[fail] clean_image: {log[-1]['error']}")
+    from google.cloud import storage
+    blob_name = result["gcs_uri"][len(f"gs://{BUCKET}/"):]
+    data = storage.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT")).bucket(BUCKET).blob(blob_name).download_as_bytes()
+    (out_dir / "images").mkdir(exist_ok=True)
+    kb = compress_copy(data, out_dir / "images" / f"{CLEAN_CONCEPT}.jpg") / 1000
+    record = {"purpose": "Simpler-prompt input made to test the Critic's APPROVED path (M4); not Designer agent output.",
+              "prompt": CLEAN_PROMPT, "aspect_ratio": "1:1", "gcs_uri": result["gcs_uri"],
+              "size": image_size(data), "copy": f"images/{CLEAN_CONCEPT}.jpg", "copy_kb": round(kb),
+              "generated_at": log[-1]["at"], "commit": git_commit()}
+    path.write_text(redact(json.dumps(record, indent=2)))
+    print(f"[done] clean_image: {record['size']}, copy {record['copy_kb']} KB")
+    return result["gcs_uri"]
+
+
 def m3_uri(name_fragment: str) -> str:
     """Real gs:// URI of an M3 image (the evidence stores it with the bucket redacted)."""
     for case in ("designer_sequence", "tool_portrait", "tool_square"):
@@ -89,16 +143,17 @@ def strong_captions() -> str:
     return json.loads((M2_EVIDENCE / "sequence_b.json").read_text())["final_text"]
 
 
-IMG_CLEAN = ("caption3_story_of_the_batch", "caption3_story_of_the_batch")
+IMG_CLEAN = (CLEAN_CONCEPT, "clean")
+IMG_CAPTION3 = ("caption3_story_of_the_batch", "caption3_story_of_the_batch")
 IMG_GARBLED_TEXT = ("caption2_swavory_ritual", "caption2_swavory_ritual")
 IMG_LOGO_OFF_BRAND = ("tool_portrait", "tool_portrait")
 
 CASES = {
-    "critic_strong": ("M2 captions + the cleanest M3 image", "strong", [IMG_CLEAN]),
+    "critic_strong": ("M2 captions + the clean test image", "strong", [IMG_CLEAN]),
     "critic_weak": ("Weak captions + off-brand image with a real logo", "weak", [IMG_LOGO_OFF_BRAND]),
-    "critic_mixed": ("M2 captions + 3 images of mixed quality", "strong", [IMG_CLEAN, IMG_GARBLED_TEXT, IMG_LOGO_OFF_BRAND]),
+    "critic_mixed": ("M2 captions + 3 images of mixed quality", "strong", [IMG_CAPTION3, IMG_GARBLED_TEXT, IMG_LOGO_OFF_BRAND]),
     "critic_no_images": ("M2 captions, no images", "strong", []),
-    "critic_weak_posts_good_visuals": ("Weak captions + the cleanest M3 image", "weak", [IMG_CLEAN]),
+    "critic_weak_posts_good_visuals": ("Weak captions + the clean test image", "weak", [IMG_CLEAN]),
     "critic_strong_2": ("Repeat of critic_strong", "strong", [IMG_CLEAN]),
     "critic_weak_2": ("Repeat of critic_weak", "weak", [IMG_LOGO_OFF_BRAND]),
 }
@@ -127,8 +182,8 @@ def git_commit() -> str:
     return git("rev-parse", "--short", "HEAD") + (" (uncommitted changes in agents/ or scripts/)" if dirty else "")
 
 
-def build_message(captions: str, images: list[tuple[str, str]]) -> tuple[str, list[str]]:
-    uris = [m3_uri(fragment) for _, fragment in images]
+def build_message(captions: str, images: list[tuple[str, str]], clean_uri: str | None = None) -> tuple[str, list[str]]:
+    uris = [clean_uri if fragment == "clean" else m3_uri(fragment) for _, fragment in images]
     text = f"Review this Instagram campaign.\n\n{BRIEF}\n\nCAPTIONS:\n{captions}\n"
     if images:
         text += "\nIMAGES (generated by the Designer):\n" + "".join(
@@ -252,13 +307,13 @@ def write_case(out_dir: pathlib.Path, case: str, data: dict) -> None:
 def write_summary(out_dir: pathlib.Path, log: list) -> None:
     lines = ["# Milestone 4 verification summary", "",
              "Generated by `workshop/starter/scripts/verify_m4.py`. Bucket, project ID and number redacted.", "",
-             "| Case | Checks passed | POSTS | VISUALS | All Approved | Overall | Guard corrections |",
-             "|---|---|---|---|---|---|---|"]
+             "| Case | Checks passed | POSTS | VISUALS | All Approved | Overall | Guard corrections | Commit |",
+             "|---|---|---|---|---|---|---|---|"]
     commits = set()
     for case, (title, _, _) in CASES.items():
         path = out_dir / f"{case}.json"
         if not path.exists():
-            lines.append(f"| [{case}]({case}.md) | not run | | | | | |")
+            lines.append(f"| [{case}]({case}.md) | not run | | | | | | |")
             continue
         d = json.loads(path.read_text())
         commits.add(d["commit"])
@@ -270,11 +325,20 @@ def write_summary(out_dir: pathlib.Path, log: list) -> None:
         except VerdictParseError:
             cols = ("unparseable",) * 4
         n_corr = len((d.get("guard") or {}).get("corrections") or [])
-        lines.append(f"| [{case}]({case}.md): {title} | {ok}/{len(d['checks'])} | " + " | ".join(cols) + f" | {n_corr} |")
-    used = sum(1 for e in log if e.get("counted", True))
-    lines += ["", f"Code commit for these runs: {', '.join(f'`{c}`' for c in sorted(commits)) or 'unknown'}", "",
-              f"Critic runs used: {used} (plus {len(log) - used} rejected with 403, not counted). "
-              f"Full history: [run_log.json](run_log.json).", ""]
+        lines.append(f"| [{case}]({case}.md): {title} | {ok}/{len(d['checks'])} | " + " | ".join(cols)
+                     + f" | {n_corr} | `{d['commit']}` |")
+    critic = [e for e in log if e.get("kind", "critic") == "critic"]
+    used = sum(1 for e in critic if e.get("counted", True))
+    lines += ["", f"Code commits for these runs: {', '.join(f'`{c}`' for c in sorted(commits)) or 'unknown'} "
+              "(per case in the table).", "",
+              f"Critic runs used: {used} (plus {len(critic) - used} rejected with 403, not counted). "
+              f"Images generated for M4: {sum(1 for e in log if e.get('kind') == 'image')} "
+              f"(M3 + M4 total: {images_generated(log)}). Full history: [run_log.json](run_log.json).", ""]
+    clean = out_dir / "clean_image.json"
+    if clean.exists():
+        c = json.loads(clean.read_text())
+        lines += ["## Clean test image", "", f"{c['purpose']} Prompt: \"{c['prompt']}\" "
+                  f"Result: {c['size'][0]}x{c['size'][1]}, `{c['gcs_uri']}`.", "", f"![clean test image]({c['copy']})", ""]
     notes = out_dir / "NOTES.md"
     if notes.exists():
         lines += [notes.read_text().strip(), ""]
@@ -285,7 +349,8 @@ async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", nargs="+", choices=list(CASES))
     parser.add_argument("--force", action="store_true")
-    parser.add_argument("--budget", type=int, default=10, help="max Critic runs in total (403s not counted)")
+    parser.add_argument("--budget", type=int, default=13, help="max Critic runs in total (403s not counted)")
+    parser.add_argument("--image-cap", type=int, default=10, help="max images across M3 + M4")
     parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_OUT)
     args = parser.parse_args()
 
@@ -293,6 +358,10 @@ async def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     log_path = out_dir / "run_log.json"
     log = json.loads(log_path.read_text()) if log_path.exists() else []
+    selected = [c for c in CASES if not args.only or c in args.only]
+    needs_clean = any(IMG_CLEAN in CASES[c][2] and (args.force or not (out_dir / f"{c}.json").exists())
+                      for c in selected)
+    clean_uri = await ensure_clean_image(out_dir, log, log_path, args.image_cap) if needs_clean else None
 
     for case, (title, kind, images) in CASES.items():
         if args.only and case not in args.only:
@@ -300,10 +369,10 @@ async def main() -> int:
         if (out_dir / f"{case}.json").exists() and not args.force:
             print(f"[skip] {case}: cached")
             continue
-        if sum(1 for e in log if e.get("counted", True)) >= args.budget:
+        if sum(1 for e in log if is_critic_run(e)) >= args.budget:
             print(f"[stop] budget of {args.budget} Critic runs reached; not running {case}")
             break
-        message, uris = build_message(strong_captions() if kind == "strong" else WEAK_CAPTIONS, images)
+        message, uris = build_message(strong_captions() if kind == "strong" else WEAK_CAPTIONS, images, clean_uri)
         log.append({"case": case, "at": datetime.datetime.now().isoformat(timespec="seconds")})
         log_path.write_text(json.dumps(log, indent=2))
         print(f"[run ] {case} ...", flush=True)
@@ -330,8 +399,9 @@ async def main() -> int:
             break
 
     write_summary(out_dir, log)
-    used = sum(1 for e in log if e.get("counted", True))
-    print(f"Critic runs used: {used}/{args.budget}. Evidence: {out_dir}")
+    used = sum(1 for e in log if is_critic_run(e))
+    print(f"Critic runs used: {used}/{args.budget}. Images M3 + M4: {images_generated(log)}/{args.image_cap}. "
+          f"Evidence: {out_dir}")
     return 0
 
 
