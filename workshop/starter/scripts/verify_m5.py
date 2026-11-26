@@ -264,12 +264,22 @@ def case_checks(case: str, r: dict, back: dict | None, leaks: list[str], exit_co
         out.append({"check": "a Notion 404 was rewritten into the recovery hint",
                     "ok": bool(hints) and any("Connections" in h and "database_id" in h for h in hints),
                     "detail": f"{len(hints)} rewritten 404s"})
-        out.append({"check": "no tasks written to the real Tasks database", "ok": back is not None and not back["tasks"],
+        blocked = [x for x in r.get("tool_responses", []) if "Blocked (not a configured database)" in x["response"]]
+        out.append({"check": "page creation outside the configured databases was blocked (informational)",
+                    "ok": True, "detail": f"{len(blocked)} blocked writes"})
+        out.append({"check": "Notion read-back: the project was created in the Projects database",
+                    "ok": back is not None and len(back["projects"]) >= 1,
+                    "detail": f"{[p['title'] for p in back['projects']] if back else '-'}"})
+        out.append({"check": "Notion read-back: no tasks written to the real Tasks database during this run",
+                    "ok": back is not None and not back["tasks"],
                     "detail": f"{len(back['tasks']) if back else '-'} tasks"})
-        out.append({"check": "Notion Status reports the failure (never 'not configured')",
-                    "ok": "not configured" not in status.lower()
+        sentences = [x.strip().lower() for x in re.split(r"[.;\n]", status) if x.strip()]
+        claims_tasks = [x for x in sentences if "task" in x and "created" in x
+                        and not any(n in x for n in ("not ", "no ", "fail", "unable", "could not", "0 "))]
+        out.append({"check": "Notion Status reports the failure, not 'not configured', and does not claim tasks were created",
+                    "ok": "not configured" not in status.lower() and not claims_tasks
                     and any(w in status.lower() for w in ("fail", "error", "could not", "unable", "not found")),
-                    "detail": status[:160]})
+                    "detail": status[:200]})
     return out
 
 
