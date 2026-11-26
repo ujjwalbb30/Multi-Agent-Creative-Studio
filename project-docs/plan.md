@@ -12,6 +12,21 @@ Files: `critic/agent.py`, `critic/image_review_tool.py`, `creative_director/agen
 - [ ] `review_image` called once per image, results used as-is
 - [ ] Orchestrator parses the verdict, re-runs Copywriter or Designer, re-reviews until approved
 - [ ] Only an approved campaign reaches the Project Manager
+- [ ] M6 (from M4): an unparseable Critic verdict is a failure, not a pass. The orchestrator
+  re-asks the Critic once; if it still does not parse, stop and report instead of advancing.
+  (The Critic's `verdict.py` guard leaves unparseable text unchanged and logs it.)
+- [ ] M6 (from M4): `[REVIEW_ERROR]` in VISUALS Issues or Priority Revisions means the image
+  review itself failed (e.g. the Critic could not read the image). Re-ask the Critic; do not
+  regenerate images for it.
+- [ ] M6 (from M4): cap revision rounds (e.g. `MAX_REVISION_ROUNDS` from env, default 3). When
+  the cap is hit, stop with the last verdict and say so; never advance an unapproved campaign.
+  The cap also matters because image review scores vary between runs: in M4 the same image
+  scored 6 and 8, so a borderline image can flip between pass and fail on an identical retry.
+- [ ] M6 (from M3/M4): Designer constraints for revisions. Every M3 image had a flaw the Critic
+  rejects. Tell the Designer (instruction or revision prompt): no real logos or brand names other
+  than the campaign's own, avoid visible text and hands where possible, and pass the Critic's
+  VISUALS Issues and Suggestions into the revision prompt verbatim. The M4 clean test image made
+  from such a prompt scored 9, 9 and 10.
 
 ### 1. Orchestration & Workflow (20%) — M6
 Files: `creative_director/agent.py`
@@ -75,6 +90,11 @@ Files: Dockerfile per specialist, `deploy/*.py`, `deploy/teardown_gcp.sh`, `.env
   about half of the ADK runs on the final instruction (see `project-docs/evidence/m2/NOTES.md`),
   and `HttpRetryOptions` cannot catch this because the call itself succeeds (`STOP`) or ends with
   `TOO_MANY_TOOL_CALLS`. The Strategist's `after_model_callback` only makes these cases visible.
+- [ ] M6 IAM (from M4): all Cloud Run services run as the default compute service account, and
+  the deploy script grants only the Designer `roles/storage.objectCreator` (write-only) on the
+  images bucket. Verify on Cloud Run that the Critic can read the images (`Part.from_uri` on
+  `gs://`); grant `roles/storage.objectViewer` if needed. Local runs use the developer's own
+  credentials, so they prove nothing about this.
 - [ ] M6 teardown: `deploy/teardown_gcp.sh` builds the images bucket name from the project ID
   (`<project>-campaign-images`) instead of reading `GCS_IMAGES_BUCKET`.
 
